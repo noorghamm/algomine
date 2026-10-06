@@ -44,6 +44,10 @@ Use play/pause, previous/next step, the timeline, and playback speed controls. E
 
 **Keyboard:** Space plays/pauses, arrow keys step, and `/` focuses catalogue search. Keyboard playback shortcuts are inactive when an input or button has focus.
 
+## Block-world interface
+
+Original pixel-art item icons form a clickable eight-slot world hotbar. Wood, stone and dirt textures frame the interface; lessons use a parchment crafting book and inventory-style playback controls. The experience bar reflects explored lessons. Voxel terrain includes grass edges, exposed stone and ore, block trees and torches that glow in night mode. All textures and item sprites are project-authored SVGs in `dist/assets/`.
+
 ## Course paths
 
 The course map follows **Algorithms & Data Structures 2** and **Algorithmics I** from the supplied lecture decks. It groups the syllabus into 13 chapters, links implemented lessons, and explicitly marks remaining topics as roadmap coverage. References use one-based PDF page numbers. The second Algorithmics deck contains revision material, not a third course.
