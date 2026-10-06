@@ -1,0 +1,68 @@
+# Blockcraft
+
+A block-built playground for learning data structures and algorithms. Explore eight voxel biomes with fourteen lessons, editable inputs, step-by-step playback, pseudocode, and practice quests.
+
+**Live site:** https://blockcraft-algorithm-world.noorghammari.chatgpt.site (private; ChatGPT sign-in required).
+
+## Run locally
+
+Requires Node.js 22 or later. There are no npm dependencies and no build step.
+
+```sh
+npm run dev
+```
+
+Open http://localhost:4173. To choose a different port:
+
+```sh
+PORT=8080 npm run dev
+```
+
+## Check the project
+
+```sh
+npm run check
+npm test
+```
+
+The test suite checks sorting results, search hits and misses, stack/queue ordering, tree and graph traversals, heap invariants, hash collisions, and pseudocode bounds. GitHub Actions runs these checks on pushes and pull requests.
+
+## Explore
+
+| World | Lessons |
+| --- | --- |
+| Sorting Plains | Bubble, selection, insertion sort |
+| Search Quarry | Binary and linear search |
+| Redstone Railway | Linked-list traversal |
+| Storage Stronghold | Stack push/pop and queue enqueue/dequeue |
+| Binary Forest | BST search and in-order traversal |
+| Pathfinder Valley | Breadth-first and depth-first search |
+| Diamond Peak | Bottom-up max-heap construction |
+| Chest Archives | Hashing with linear probing |
+
+Use play/pause, previous/next step, the timeline, and playback speed controls. Edit values or choose input presets. Drag the world to orbit, scroll to zoom, and switch between day and night. Practice quests and completed lessons earn XP, saved in the current browser's local storage.
+
+**Keyboard:** Space plays/pauses, arrow keys step, and `/` focuses catalogue search. Keyboard playback shortcuts are inactive when an input or button has focus.
+
+## Source layout
+
+- `dist/index.html`: catalogue, lesson workbench, and dialogs
+- `dist/style.css`: responsive layout and block-inspired styling
+- `dist/algorithms.mjs`: lesson definitions and pure simulation functions
+- `dist/world.mjs`: canvas voxel renderer, camera, and swap animations
+- `dist/app.js`: navigation, playback, input validation, practice, and local progress
+- `tests/algorithms.test.mjs`: algorithm verification
+- `scripts/serve.mjs`: dependency-free local development server
+- `.openai/hosting.json`: existing private Sites deployment identity
+
+`dist/` contains the editable source and deployable static files; it is intentionally tracked. Any static host supporting JavaScript modules can serve it. Hash-based routes do not need server rewrites. Google Fonts is the only runtime external asset dependency; fallback fonts are provided.
+
+## Scope
+
+This is an independent educational project with original voxel graphics. It is not affiliated with Minecraft, Mojang, Microsoft, or VisuAlgo. The topic-library and visualization approach was inspired by https://visualgo.net/en; its code and assets are not used.
+
+The graph lesson uses a fixed seven-node undirected map. Tree lessons omit duplicate values. Binary search sorts its input automatically. Progress is browser-local and does not sync between devices. Complexity labels describe the demonstrated algorithms, not the visualization's stored animation frames.
+
+## Contributing
+
+Keep simulation logic in `dist/algorithms.mjs` and visual presentation in `dist/world.mjs`. Add meaningful algorithm checks when introducing a new lesson. Run both check commands and inspect the affected lesson in a browser at desktop and mobile widths before opening a pull request.

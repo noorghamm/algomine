@@ -1,0 +1,14 @@
+{
+  "name": "blockcraft",
+  "version": "0.2.0",
+  "private": true,
+  "description": "A Minecraft-inspired interactive playground for data structures and algorithms.",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "test": "node tests/algorithms.test.mjs",
+    "check": "node --check dist/app.js && node --check dist/algorithms.mjs && node --check dist/world.mjs"
+  },
+  "engines": { "node": ">=22" }
+}
