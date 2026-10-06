@@ -1,6 +1,6 @@
 # AlgoMine
 
-A block-built playground for learning data structures and algorithms. Explore eight voxel biomes with fourteen lessons, editable inputs, step-by-step playback, pseudocode, and practice quests.
+A block-built playground for learning data structures and algorithms. Explore eight voxel biomes with sixteen lessons, editable inputs, step-by-step playback, pseudocode, and practice quests.
 
 **Live site:** https://blockcraft-algorithm-world.noorghammari.chatgpt.site (private; ChatGPT sign-in required).
 
@@ -31,7 +31,7 @@ The test suite checks sorting results, search hits and misses, stack/queue order
 
 | World | Lessons |
 | --- | --- |
-| Sorting Plains | Bubble, selection, insertion sort |
+| Sorting Plains | Bubble, selection, insertion, merge sort and quicksort |
 | Search Quarry | Binary and linear search |
 | Redstone Railway | Linked-list traversal |
 | Storage Stronghold | Stack push/pop and queue enqueue/dequeue |
@@ -44,11 +44,20 @@ Use play/pause, previous/next step, the timeline, and playback speed controls. E
 
 **Keyboard:** Space plays/pauses, arrow keys step, and `/` focuses catalogue search. Keyboard playback shortcuts are inactive when an input or button has focus.
 
+## Course paths
+
+The course map follows **Algorithms & Data Structures 2** and **Algorithmics I** from the supplied lecture decks. It groups the syllabus into 13 chapters, links implemented lessons, and explicitly marks remaining topics as roadmap coverage. References use one-based PDF page numbers. The second Algorithmics deck contains revision material, not a third course.
+
+Merge sort shows the pending merge buffer, active range and recursion depth. Quicksort uses last-pivot Lomuto partitioning, matching the ADS partitioning example. Its worst-case time and stack costs are shown explicitly. Course links support direct routes such as `#world/sorting/merge`.
+
+Only original summaries and implementations are included. The source PDFs and extracted slide text are not distributed in this repository. Mapped syllabus coverage is not a claim that all course lessons or exam preparation are implemented.
+
 ## Source layout
 
 - `dist/index.html`: catalogue, lesson workbench, and dialogs
 - `dist/style.css`: responsive layout and block-inspired styling
 - `dist/algorithms.mjs`: lesson definitions and pure simulation functions
+- `dist/courses.mjs`: original course map, PDF page references and playable lesson links
 - `dist/world.mjs`: canvas voxel renderer, camera, and swap animations
 - `dist/app.js`: navigation, playback, input validation, practice, and local progress
 - `tests/algorithms.test.mjs`: algorithm verification

@@ -15,3 +15,34 @@ for(const values of cases){
 const graph=[1,2,3,4,5,6,7];assert.deepEqual(simulate('bfs',graph).at(-1).output,[1,2,3,4,5,6,7]);assert.deepEqual(simulate('dfs',graph).at(-1).output,[1,2,4,7,5,3,6]);checked+=2;
 for(const topic of topics)for(const id of topic.algorithms){for(const f of simulate(id,topic.values)){assert.ok(f.line>=0&&f.line<definitions[id].code.length);assert.ok(f.active.every(i=>Number.isInteger(i)&&i>=0));}checked++;}
 console.log(`${checked} algorithm cases passed: sorting, searches, stack/queue order, tree traversal, graph order, heap property, collision handling, and pseudocode bounds.`);
+
+// Exhaustively exercise duplicate keys and uneven partitions, including empty/singleton input.
+for (const algorithm of ['merge','quick']) {
+ for (let size=0;size<=6;size++) {
+  for (let code=0;code<3**size;code++) {
+   let n=code;const input=Array.from({length:size},()=>{const value=n%3;n=Math.floor(n/3);return value;});
+   const original=[...input],expected=[...input].sort((a,b)=>a-b),frames=simulate(algorithm,input);
+   assert.deepEqual(input,original,'simulation must not mutate caller input');
+   assert.deepEqual(frames.at(-1).values,expected);
+   assert.equal(frames.at(-1).complete,true);
+   for(const frame of frames){
+    assert.ok(frame.active.every(i=>i>=0&&i<size));
+    assert.ok(frame.line>=0&&frame.line<definitions[algorithm].code.length);
+    if(algorithm==='quick') for(const index of frame.marked) assert.equal(frame.values[index],expected[index],'fixed pivots must already be in final position');
+   }
+   checked++;
+  }
+ }
+}
+for(const input of [[1,2,3,4,5],[5,4,3,2,1],[2,2,2,2,2]]){
+ assert.equal(simulate('quick',input).at(-1).comparisons,10,'last-pivot worst case makes n(n-1)/2 comparisons');
+}
+const mergeFrames=simulate('merge',[4,1,3,2]);
+assert.ok(mergeFrames.some(f=>f.aux.length>0),'merge workspace must be visible');
+assert.equal(mergeFrames.at(-1).comparisons,5);
+assert.equal(mergeFrames.at(-1).moves,8);
+const {courses}=await import('../dist/courses.mjs');
+for(const course of courses)for(const chapter of course.chapters)for(const id of chapter.lessons){
+ assert.ok(definitions[id]);assert.ok(topics.some(t=>t.algorithms.includes(id)));
+}
+console.log(`${checked} total cases passed, including exhaustive merge/quicksort inputs and course lesson links.`);
