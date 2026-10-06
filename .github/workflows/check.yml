@@ -1,4 +1,4 @@
-name: Check Blockcraft
+name: Check AlgoMine
 on:
   push:
   pull_request:

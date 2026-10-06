@@ -1,4 +1,4 @@
-# Blockcraft
+# AlgoMine
 
 A block-built playground for learning data structures and algorithms. Explore eight voxel biomes with fourteen lessons, editable inputs, step-by-step playback, pseudocode, and practice quests.
 

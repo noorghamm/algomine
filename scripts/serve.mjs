@@ -18,5 +18,5 @@ const server = http.createServer(async (request, response) => {
     response.end(request.method === 'HEAD' ? undefined : data);
   } catch { response.writeHead(404).end('Not found'); }
 });
-server.listen(port, '127.0.0.1', () => console.log(`Blockcraft: http://localhost:${port}`));
+server.listen(port, '127.0.0.1', () => console.log(`AlgoMine: http://localhost:${port}`));
 server.on('error', error => { console.error(error.message); process.exitCode = 1; });
