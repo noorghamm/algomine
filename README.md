@@ -48,6 +48,16 @@ Use play/pause, previous/next step, the timeline, and playback speed controls. E
 
 Original pixel-art item icons form a clickable eight-slot world hotbar. Wood, stone and dirt textures frame the interface; lessons use a parchment crafting book and inventory-style playback controls. The experience bar reflects explored lessons. Voxel terrain includes grass edges, exposed stone and ore, block trees and torches that glow in night mode. All textures and item sprites are project-authored SVGs in `dist/assets/`.
 
+## Creative build mode
+
+Open **Build** in the header, **Build Your World** on the home screen, or **Build Mode** inside a lesson. Each biome has its own browser-local 9 × 9 plot, with up to 256 placed blocks and six levels of height. Choose from eight materials, click/tap a top face to stack, or a visible side face to attach a block. Mine removes placed blocks; the island base is protected. Floating structures are allowed.
+
+Undo/redo keeps the last 50 edits in the current session. Clearing a plot is undoable. Builds autosave in this browser and survive refresh; history and material selection do not persist across refresh. A storage failure is reported in the builder. Builds do not sync across devices.
+
+For keyboard use, focus the plot: arrows move the ground-column cursor, Space/Enter uses the selected tool, X mines the top block, 1–8 selects a material, and Ctrl/Command-Z undoes (Shift to redo). X/Y selectors and an action button provide an alternative to canvas interaction. Dragging orbits and scrolling zooms.
+
+**Sort my build** uses the heights of 3–10 occupied columns as merge-sort input, ordered by Y then X. Height is the highest occupied level plus one, including gaps beneath floating blocks. The source build is preserved. Creative builds use dedicated plots and do not modify lesson data unless this action is chosen.
+
 ## Course paths
 
 The course map follows **Algorithms & Data Structures 2** and **Algorithmics I** from the supplied lecture decks. It groups the syllabus into 13 chapters, links implemented lessons, and explicitly marks remaining topics as roadmap coverage. References use one-based PDF page numbers. The second Algorithmics deck contains revision material, not a third course.
@@ -61,6 +71,9 @@ Only original summaries and implementations are included. The source PDFs and ex
 - `dist/index.html`: catalogue, lesson workbench, and dialogs
 - `dist/style.css`: responsive layout and block-inspired styling
 - `dist/algorithms.mjs`: lesson definitions and pure simulation functions
+- `dist/builder.mjs`: builder controls, per-biome local saving and sorting handoff
+- `dist/build-state.mjs`: placement validation, face picking helpers and undoable build state
+- `tests/build-state.test.mjs`: building rules, history, storage round trips and height extraction
 - `dist/courses.mjs`: original course map, PDF page references and playable lesson links
 - `dist/world.mjs`: canvas voxel renderer, camera, and swap animations
 - `dist/app.js`: navigation, playback, input validation, practice, and local progress

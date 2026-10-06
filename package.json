@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",
-    "test": "node tests/algorithms.test.mjs",
-    "check": "node --check dist/app.js && node --check dist/algorithms.mjs && node --check dist/world.mjs && node --check dist/courses.mjs"
+    "test": "node tests/algorithms.test.mjs && node tests/build-state.test.mjs",
+    "check": "node --check dist/app.js && node --check dist/algorithms.mjs && node --check dist/world.mjs && node --check dist/courses.mjs && node --check dist/build-state.mjs && node --check dist/builder.mjs"
   },
   "engines": { "node": ">=22" }
 }
