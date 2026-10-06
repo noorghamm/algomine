@@ -4,6 +4,14 @@ A block-built playground for learning data structures and algorithms. Explore ei
 
 **Live site:** https://blockcraft-algorithm-world.noorghammari.chatgpt.site (private; ChatGPT sign-in required).
 
+## Public hosting with GitHub Pages
+
+The `Publish AlgoMine` workflow validates the application, uploads only `dist/`, and deploys to GitHub Pages on pushes to `main`. It can also be started manually from Actions. Repository Settings → Pages must use **GitHub Actions** as its publishing source.
+
+Public address after a successful deployment: https://noorghamm.github.io/algomine/
+
+Relative asset URLs and hash routes support the `/algomine/` project path. The existing private Sites deployment is separate. Browser-local progress and builds belong to each site's origin and are not transferred between hosts.
+
 ## Run locally
 
 Requires Node.js 22 or later. There are no npm dependencies and no build step.
