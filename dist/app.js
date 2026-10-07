@@ -1,34 +1,44 @@
+// Bootstrap: routing, home screen, course map, journal, header and global keys.
 import { topics, definitions, simulate, makeTree } from './algorithms.mjs';
 import { courses } from './courses.mjs';
 import { Builder } from './builder.mjs';
 import { VoxelWorld } from './world.mjs';
-const $ = id => document.getElementById(id);
-let saved;
-try {
-  saved = JSON.parse(localStorage.getItem('blockcraft-journal') || '{}');
-} catch {
-  saved = {};
-}
-if (!saved || typeof saved !== 'object') saved = {};
-const progress = {
-  completed: Array.isArray(saved.completed) ? saved.completed.filter(x => definitions[x]) : [],
-  quizzes: Array.isArray(saved.quizzes) ? saved.quizzes.filter(x => definitions[x]) : [],
-};
-let currentTopic = topics[0],
-  algorithm = 'bubble',
-  values = [...currentTopic.values],
-  target = 6,
-  frames = [],
-  position = 0,
-  timer = null,
-  filter = 'All worlds',
-  sound = false,
-  audio,
-  toastTimer,
-  tab = 'learn';
-const datasets = new Map();
+import { $, toast, el } from './ui.mjs';
+import { sound } from './sound.mjs';
+import {
+  progress,
+  onChange,
+  levelInfo,
+  touchStreak,
+  setSetting,
+  ACHIEVEMENTS,
+  lessonCount,
+} from './progress.mjs';
+import { lab, initLab } from './lab.mjs';
+import { initArcade, openArcade, closeArcade } from './arcade/index.mjs';
+import { initSettings, openSettings, applyTheme } from './settings.mjs';
+
 const cards = [];
+let filter = 'All worlds';
 let selectedCourse = 'ads';
+const hotbarItems = {
+  sorting: 'pickaxe',
+  search: 'compass',
+  list: 'rail',
+  stack: 'chest',
+  tree: 'sapling',
+  graph: 'redstone',
+  heap: 'diamond',
+  hash: 'book',
+  balanced: 'leaf',
+  strings: 'rune',
+  compress: 'anvil',
+};
+
+applyTheme(progress.settings.theme);
+initLab();
+initSettings();
+initArcade();
 const heroWorld = new VoxelWorld($('heroWorld'));
 heroWorld.set({
   topic: 'sorting',
@@ -36,31 +46,29 @@ heroWorld.set({
   hero: true,
   frame: { values: [3, 6, 4, 9, 5, 7], active: [2, 3], marked: [5], discarded: [] },
 });
-const world = new VoxelWorld($('world'), {
-  interactive: true,
-  onInspect: hit =>
-    toast(
-      `Block ${hit.value} · ${currentTopic.id === 'graph' ? 'node' : 'index'} ${currentTopic.id === 'graph' ? hit.value : hit.index}`
-    ),
-});
 const builder = new Builder({
   onUseDataset: heights => {
-    datasets.set('sorting', heights);
+    lab.setDataset('merge', heights);
     location.hash = 'world/sorting/merge';
   },
 });
-function persist() {
-  try {
-    localStorage.setItem('blockcraft-journal', JSON.stringify(progress));
-  } catch {}
-  updateProgress();
-}
-function updateProgress() {
-  $('experienceFill').style.width = `${(progress.completed.length / Object.keys(definitions).length) * 100}%`;
-  $('experienceText').textContent =
-    `${progress.completed.length} / ${Object.keys(definitions).length} lessons explored`;
-  $('xp').textContent = progress.completed.length * 50 + progress.quizzes.length * 25;
+
+// ---------- Header, XP, level ----------
+
+function updateHeader(event = {}) {
+  const info = levelInfo();
+  $('xp').textContent = progress.xp;
+  $('levelTitle').textContent = info.title.toUpperCase();
+  $('levelNumber').textContent = `LVL ${info.level}`;
+  $('levelFill').style.width = `${info.pct * 100}%`;
+  $('levelBar').title = info.max ? 'Max level reached' : `${progress.xp} / ${info.next} XP to the next level`;
   $('journalCount').textContent = progress.completed.length;
+  $('streakBadge').textContent = `☀ ${progress.streak.count}`;
+  $('streakBadge').title = `${progress.streak.count}-day streak`;
+  const total = lessonCount();
+  $('experienceFill').style.width = `${(progress.completed.length / total) * 100}%`;
+  $('experienceText').textContent =
+    `${progress.completed.length} / ${total} lessons explored · ${progress.mined.length} mined`;
   for (const { topic, card } of cards) {
     const count = topic.algorithms.filter(id => progress.completed.includes(id)).length;
     card.querySelector('.card-status').textContent =
@@ -69,90 +77,74 @@ function updateProgress() {
       ? `${count} / ${topic.algorithms.length} LESSONS COMPLETE`
       : `${topic.algorithms.length} ${topic.algorithms.length === 1 ? 'LESSON' : 'LESSONS'} · EXPLORE`;
   }
-  $('completionBadge').textContent = progress.completed.includes(algorithm)
-    ? '✓ LESSON EXPLORED'
-    : 'WORLD IN PROGRESS';
+  if (event.leveled) {
+    sound.levelUp();
+    toast(`⬆ Level ${info.level}: ${info.title}!`, 'good');
+  }
+  for (const a of event.unlocked || [])
+    setTimeout(() => toast(`${a.icon} Achievement: ${a.name}`, 'gold'), 600);
 }
-function toast(message) {
-  $('toast').textContent = message;
-  $('toast').classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => $('toast').classList.remove('show'), 3500);
-}
-function buildCourseMap() {
-  const course = courses.find(c => c.id === selectedCourse);
-  const host = $('courseMap');
-  host.style.setProperty('--course-color', course.color);
-  host.innerHTML = `<div class="course-intro"><span class="course-emblem" aria-hidden="true">${course.icon}</span><div><span class="eyebrow">${course.label}</span><h3>${course.name}</h3><p>${course.description}</p><small>${course.source}</small></div></div><div class="chapter-list"></div>`;
-  course.chapters.forEach((chapter, index) => {
-    const row = document.createElement('details');
-    row.className = 'chapter';
-    row.innerHTML = `<summary><span class="chapter-number">${String(index + 1).padStart(2, '0')}</span><span class="chapter-title"><strong>${chapter.name}</strong><small>${chapter.world}</small></span><span class="chapter-status ${chapter.lessons.length ? 'available' : ''}">${chapter.lessons.length ? `${chapter.lessons.length} PLAYABLE` : 'MAPPED'}</span><span class="chapter-expand" aria-hidden="true">+</span></summary><div class="chapter-content"><p>${chapter.summary}</p><p class="chapter-mission"><b>YOUR QUEST</b> ${chapter.mission}</p><div class="chapter-lessons"></div><p class="chapter-next"><b>Still to build:</b> ${chapter.next}.</p><small class="chapter-source">${chapter.pages}</small></div>`;
-    for (const id of chapter.lessons) {
-      const topic = topics.find(t => t.algorithms.includes(id));
-      const a = document.createElement('a');
-      a.href = `#world/${topic.id}/${id}`;
-      a.className = 'lesson-portal';
-      a.textContent = `${definitions[id].name} →`;
-      row.querySelector('.chapter-lessons').append(a);
-    }
-    host.querySelector('.chapter-list').append(row);
-  });
-  document
-    .querySelectorAll('[data-course]')
-    .forEach(b => b.setAttribute('aria-pressed', String(b.dataset.course === selectedCourse)));
-}
-function buildCards() {
-  const items = ['pickaxe', 'compass', 'redstone', 'chest', 'sapling', 'rail', 'diamond', 'book'];
+onChange(updateHeader);
+
+// ---------- Home screen ----------
+
+function buildHome() {
+  $('worldCount').textContent = topics.length;
+  $('lessonCount').textContent = lessonCount();
+  $('filterAllCount').textContent = topics.length;
+  $('courseStamp').innerHTML = `${courses.length} COURSE PATHS<br>${lessonCount()} PLAYABLE LESSONS`;
   $('worldHotbar').replaceChildren(
-    ...topics.map((topic, i) => {
-      const slot = document.createElement('a');
-      slot.className = 'inventory-slot';
-      slot.href = `#world/${topic.id}`;
-      slot.title = topic.name;
-      slot.setAttribute('aria-label', topic.name);
-      slot.innerHTML = `<span class="slot-number">${i + 1}</span><img src="assets/${items[i]}.svg" alt=""><span class="slot-label">${topic.subject}</span>`;
-      return slot;
-    })
+    ...topics.map((topic, i) =>
+      el(
+        'a',
+        { class: 'inventory-slot', href: `#world/${topic.id}`, title: topic.name, 'aria-label': topic.name },
+        el('span', { class: 'slot-number', text: i + 1 }),
+        el('img', { src: `assets/${hotbarItems[topic.id] || 'book'}.svg`, alt: '' }),
+        el('span', { class: 'slot-label', text: topic.subject })
+      )
+    )
   );
   topics.forEach((topic, i) => {
-    const card = document.createElement('a');
-    card.className = 'topic-card';
-    card.href = `#world/${topic.id}`;
-    card.style.setProperty('--card-color', topic.color);
-    card.setAttribute('aria-label', `${topic.name}: ${topic.subject}`);
-    card.innerHTML = `<div class="card-image"><canvas aria-hidden="true"></canvas><span class="card-number">0${i + 1}</span><span class="card-status"></span></div><div class="card-body"><span class="card-subject">${topic.subject}</span><h3>${topic.name}</h3><p>${topic.description}</p><div class="card-bottom"><span class="card-bottom-label"></span><b>→</b></div></div>`;
-    $('topicGrid').append(card);
-    let frame = {
-      values: topic.id === 'sorting' ? [3, 7, 4, 9, 6] : [...topic.values],
-      active: [],
-      marked: [],
-      discarded: [],
-      nodes: [],
-    };
-    if (topic.id === 'tree') frame.nodes = makeTree(topic.values);
-    if (topic.id === 'heap') frame = simulate('heap', topic.values).at(-1);
-    if (topic.id === 'hash') frame = simulate('hash', topic.values).at(-1);
-    if (topic.id === 'stack') frame.values = [4, 7, 2, 9];
-    const view = new VoxelWorld(card.querySelector('canvas'));
-    view.set({
-      topic: topic.id,
-      terrain: topic.terrain,
-      thumbnail: true,
-      frame,
-      algorithm: topic.algorithms[0],
+    const card = el('a', {
+      class: 'topic-card',
+      href: `#world/${topic.id}`,
+      'aria-label': `${topic.name}: ${topic.subject}`,
     });
+    card.style.setProperty('--card-color', topic.color);
+    card.innerHTML = `<div class="card-image"><canvas aria-hidden="true"></canvas><span class="card-number">${String(i + 1).padStart(2, '0')}</span><span class="card-status"></span></div><div class="card-body"><span class="card-subject">${topic.subject}</span><h3>${topic.name}</h3><p>${topic.description}</p><div class="card-bottom"><span class="card-bottom-label"></span><b>→</b></div></div>`;
+    $('topicGrid').append(card);
+    const view = new VoxelWorld(card.querySelector('canvas'));
+    view.set({ topic: topic.id, terrain: topic.terrain, thumbnail: true, ...thumbnailFrame(topic) });
     cards.push({ topic, card, view });
   });
-  updateProgress();
+  updateHeader();
 }
+
+function thumbnailFrame(topic) {
+  const first = topic.algorithms[0];
+  const d = first && definitions[first];
+  const base = { values: [...topic.values], active: [], marked: [], discarded: [], nodes: [] };
+  try {
+    if (topic.id === 'sorting') return { frame: { ...base, values: [3, 7, 4, 9, 6] }, view: 'bars' };
+    if (topic.id === 'stack') return { frame: { ...base, values: [4, 7, 2, 9] }, view: 'stack' };
+    if (topic.id === 'tree') return { frame: { ...base, nodes: makeTree(topic.values) }, view: 'tree' };
+    if (d && (d.sample || ['heap', 'hash', 'graph', 'balanced', 'strings', 'compress'].includes(topic.id))) {
+      const input = d.sample ? d.sample.input : topic.values;
+      const frames = simulate(first, input, d.sample?.target);
+      return { frame: frames.at(-1), view: d.view || topic.view, algorithm: first };
+    }
+  } catch {}
+  return { frame: base, view: topic.view, algorithm: first };
+}
+
 function applyFilter() {
   const q = $('topicSearch').value.trim().toLowerCase();
   let count = 0;
   for (const { topic, card, view } of cards) {
+    const lessonNames = topic.algorithms.map(id => definitions[id].name).join(' ');
     const show =
       (filter === 'All worlds' || topic.category === filter) &&
-      `${topic.name} ${topic.subject} ${topic.tags.join(' ')}`.toLowerCase().includes(q);
+      `${topic.name} ${topic.subject} ${topic.tags.join(' ')} ${lessonNames}`.toLowerCase().includes(q);
     card.hidden = !show;
     if (show) {
       count++;
@@ -166,350 +158,161 @@ function applyFilter() {
     b.setAttribute('aria-pressed', b.dataset.filter === filter);
   });
 }
-function pause() {
-  clearTimeout(timer);
-  timer = null;
-  $('play').textContent = position === frames.length - 1 ? '↺ REPLAY' : '▶ PLAY';
-  $('play').setAttribute(
-    'aria-label',
-    position === frames.length - 1 ? 'Replay animation' : 'Play animation'
-  );
+
+function buildCourseMap() {
+  const course = courses.find(c => c.id === selectedCourse);
+  const host = $('courseMap');
+  host.style.setProperty('--course-color', course.color);
+  host.innerHTML = `<div class="course-intro"><span class="course-emblem" aria-hidden="true">${course.icon}</span><div><span class="eyebrow">${course.label}</span><h3>${course.name}</h3><p>${course.description}</p><small>${course.source}</small></div></div><div class="chapter-list"></div>`;
+  course.chapters.forEach((chapter, index) => {
+    const lessons = chapter.lessons.filter(id => definitions[id]);
+    const done = lessons.filter(id => progress.completed.includes(id)).length;
+    const row = el('details', { class: 'chapter' });
+    row.innerHTML = `<summary><span class="chapter-number">${String(index + 1).padStart(2, '0')}</span><span class="chapter-title"><strong>${chapter.name}</strong><small>${chapter.world}</small></span><span class="chapter-status ${lessons.length ? 'available' : ''}">${lessons.length ? `${done} / ${lessons.length} PLAYED` : 'MAPPED'}</span><span class="chapter-expand" aria-hidden="true">+</span></summary><div class="chapter-content"><p>${chapter.summary}</p><p class="chapter-mission"><b>YOUR QUEST</b> ${chapter.mission}</p><div class="chapter-lessons"></div>${chapter.next ? `<p class="chapter-next"><b>Still to build:</b> ${chapter.next}.</p>` : ''}<small class="chapter-source">${chapter.pages}</small></div>`;
+    for (const id of lessons) {
+      const topic = topics.find(t => t.algorithms.includes(id));
+      row.querySelector('.chapter-lessons').append(
+        el('a', {
+          href: `#world/${topic.id}/${id}`,
+          class: `lesson-portal ${progress.completed.includes(id) ? 'done' : ''}`,
+          text: `${progress.completed.includes(id) ? '✓ ' : ''}${definitions[id].name} →`,
+        })
+      );
+    }
+    host.querySelector('.chapter-list').append(row);
+  });
+  document
+    .querySelectorAll('[data-course]')
+    .forEach(b => b.setAttribute('aria-pressed', String(b.dataset.course === selectedCourse)));
 }
-function prepare() {
-  pause();
-  frames = simulate(algorithm, values, target);
-  position = 0;
-  $('timeline').max = frames.length - 1;
-  render();
-}
-function complete() {
-  if (position !== frames.length - 1 || progress.completed.includes(algorithm)) return;
-  progress.completed.push(algorithm);
-  persist();
-  toast('✦ Lesson explored! +50 XP. Try the practice quest next.');
-}
-function soundBlock() {
-  if (!sound) return;
-  try {
-    audio ??= new (window.AudioContext || window.webkitAudioContext)();
-    audio.resume();
-    const osc = audio.createOscillator(),
-      gain = audio.createGain();
-    osc.type = 'triangle';
-    osc.frequency.value = 220 + (position % 7) * 45;
-    gain.gain.setValueAtTime(0.04, audio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.08);
-    osc.connect(gain);
-    gain.connect(audio.destination);
-    osc.start();
-    osc.stop(audio.currentTime + 0.09);
-  } catch {
-    sound = false;
-    $('sound').setAttribute('aria-label', 'Enable sound');
-  }
-}
-function moveTo(n, award = true) {
-  position = Math.max(0, Math.min(frames.length - 1, n));
-  render();
-  soundBlock();
-  if (award) complete();
-}
-function tick() {
-  if (position >= frames.length - 1) {
-    pause();
-    return;
-  }
-  moveTo(position + 1);
-  if (position === frames.length - 1) {
-    pause();
-    return;
-  }
-  timer = setTimeout(tick, 850 / Number($('speed').value));
-}
-function play() {
-  if (timer) {
-    pause();
-    return;
-  }
-  if (position === frames.length - 1) moveTo(0, false);
-  $('play').textContent = 'Ⅱ PAUSE';
-  $('play').setAttribute('aria-label', 'Pause animation');
-  timer = setTimeout(tick, 100);
-}
-function step(delta) {
-  pause();
-  moveTo(position + delta);
-  pause();
-}
-function render() {
-  const f = frames[position];
-  if (!f) return;
-  $('timeline').value = position;
-  $('stepCount').textContent = `${position} / ${frames.length - 1}`;
-  $('back').disabled = position === 0;
-  $('step').disabled = position === frames.length - 1;
-  $('status').textContent = f.message;
-  $('statusIcon').textContent = f.complete ? '✓' : '▸';
-  $('comparisons').textContent = f.comparisons;
-  $('comparisonLabel').textContent = ['traverse', 'inorder', 'bfs', 'dfs'].includes(algorithm)
-    ? 'NODES VISITED'
-    : 'COMPARISONS';
-  $('moves').textContent = f.moves;
-  const def = definitions[algorithm];
-  $('code').replaceChildren(
-    ...def.code.map((text, i) => {
-      const line = document.createElement('span');
-      line.className = `code-line ${i === f.line ? 'highlight' : ''}`;
-      const number = document.createElement('b');
-      number.textContent = String(i + 1).padStart(2, '0');
-      line.append(number, document.createTextNode(text));
-      return line;
-    })
-  );
-  $('targetBadge').hidden = !def.target;
-  $('targetBadge').querySelector('b').textContent = target;
-  $('incomingBadge').hidden = f.incoming === undefined;
-  if (f.incoming !== undefined) $('incomingBadge').textContent = `INCOMING: ${f.incoming}`;
-  $('stateValues').replaceChildren(
-    ...f.values.map((value, i) =>
-      chip(
-        value,
-        f.active.includes(i)
-          ? 'active'
-          : f.discarded.includes(i)
-            ? 'discarded'
-            : f.marked.includes(i)
-              ? 'marked'
-              : ''
-      )
+
+// ---------- Journal ----------
+
+function showJournal() {
+  const host = $('journalEntries');
+  host.replaceChildren();
+  const info = levelInfo();
+  host.append(
+    el(
+      'div',
+      { class: 'journal-summary' },
+      el('div', {}, el('strong', { text: progress.xp }), el('span', { text: 'XP' })),
+      el('div', {}, el('strong', { text: info.level }), el('span', { text: info.title })),
+      el('div', {}, el('strong', { text: progress.completed.length }), el('span', { text: 'explored' })),
+      el('div', {}, el('strong', { text: progress.mined.length }), el('span', { text: 'mined' })),
+      el('div', {}, el('strong', { text: progress.quizzes.length }), el('span', { text: 'quests' })),
+      el('div', {}, el('strong', { text: progress.streak.count }), el('span', { text: 'day streak' }))
     )
   );
-  if (!f.values.length) $('stateValues').innerHTML = '<span class="tray-empty">Empty storage</span>';
-  $('trayLabel').textContent =
-    algorithm === 'hash'
-      ? 'CHESTS'
-      : algorithm === 'stack'
-        ? 'STACK'
-        : algorithm === 'queue'
-          ? 'QUEUE'
-          : 'VALUES';
-  const isGraph = ['bfs', 'dfs'].includes(algorithm);
-  const auxiliary = isGraph || algorithm === 'merge' ? f.aux : f.output;
-  $('auxTray').hidden = !isGraph && algorithm !== 'merge' && !auxiliary.length;
-  $('auxLabel').textContent = isGraph
-    ? algorithm === 'bfs'
-      ? 'QUEUE'
-      : 'STACK'
-    : algorithm === 'merge'
-      ? 'MERGE BUFFER'
-      : 'OUTPUT';
-  $('auxValues').replaceChildren(...auxiliary.map(v => chip(v, 'marked')));
-  if (!auxiliary.length) $('auxValues').innerHTML = '<span class="tray-empty">Empty</span>';
-  $('algorithmContext').hidden = !f.range;
-  $('algorithmContext').textContent = f.range
-    ? `RANGE ${f.range[0]}–${f.range[1]} · DEPTH ${f.depth}${f.pivot !== undefined ? ` · PIVOT ${f.values[f.pivot]}` : ''}`
-    : '';
-  world.set({ topic: currentTopic.id, terrain: currentTopic.terrain, algorithm, frame: f });
-  if (!timer) $('play').textContent = position === frames.length - 1 ? '↺ REPLAY' : '▶ PLAY';
-}
-function chip(value, state = '') {
-  const s = document.createElement('span');
-  s.className = `value-chip ${state}`;
-  s.textContent = value === null ? '·' : value;
-  return s;
-}
-function setAlgorithm(id) {
-  algorithm = id;
-  quizIndex = 0;
-  const def = definitions[id];
-  $('algorithm').value = id;
-  $('lessonTitle').textContent = def.name;
-  $('description').textContent = def.intro;
-  $('insight').textContent = def.insight;
-  $('timeComplexity').textContent = def.time;
-  $('spaceComplexity').textContent = def.space;
-  prepare();
-  renderPractice();
-  updateProgress();
-}
-function openWorld(id, lesson) {
-  $('buildNav').href = `#build/${id}`;
-  const next = topics.find(t => t.id === id) || topics[0];
-  pause();
-  currentTopic = next;
-  values = [...(datasets.get(id) || next.values)];
-  target = next.id === 'tree' ? 10 : 6;
-  $('library').hidden = true;
-  $('lab').hidden = false;
-  $('libraryLink').classList.remove('active');
-  $('biomeName').textContent = next.name.toUpperCase();
-  $('labTitle').textContent = next.name;
-  $('labCategory').textContent = next.category.toUpperCase();
-  $('sceneCaption').textContent =
-    `${next.name.toUpperCase()} // ${String(topics.indexOf(next) + 1).padStart(2, '0')}`;
-  $('algorithm').replaceChildren(
-    ...next.algorithms.map(id => {
-      const option = document.createElement('option');
-      option.value = id;
-      option.textContent = definitions[id].name;
-      return option;
-    })
+  const badges = el('div', { class: 'badge-grid' });
+  for (const a of ACHIEVEMENTS) {
+    const got = progress.achievements.includes(a.id);
+    badges.append(
+      el(
+        'div',
+        { class: `badge ${got ? 'earned' : ''}`, title: a.text },
+        el('span', { text: a.icon }),
+        el('b', { text: a.name }),
+        el('small', { text: a.text })
+      )
+    );
+  }
+  host.append(
+    el('h3', { text: `Achievements · ${progress.achievements.length} / ${ACHIEVEMENTS.length}` }),
+    badges
   );
-  $('edit').hidden = id === 'graph';
-  $('shuffle').hidden = id === 'graph';
-  world.reset();
-  setAlgorithm(next.algorithms.includes(lesson) ? lesson : next.algorithms[0]);
-  switchTab('learn');
-  window.scrollTo(0, 0);
+  const games = Object.entries(progress.games);
+  if (games.length) {
+    host.append(el('h3', { text: 'Arcade best scores' }));
+    for (const [id, g] of games)
+      host.append(
+        el(
+          'div',
+          { class: 'journal-entry' },
+          el('div', {}, el('strong', { text: id }), el('small', { text: `${g.plays} plays` })),
+          el('span', { text: `★ ${g.best}` })
+        )
+      );
+  }
+  host.append(el('h3', { text: 'Lessons' }));
+  if (!progress.completed.length && !progress.quizzes.length)
+    host.append(
+      el('p', {
+        text: 'Your journal is waiting for its first adventure. Finish an animation, mine a lesson, or solve a practice quest.',
+      })
+    );
+  for (const topic of topics)
+    for (const id of topic.algorithms) {
+      if (!progress.completed.includes(id) && !progress.quizzes.includes(id) && !progress.mined.includes(id))
+        continue;
+      const row = el(
+        'a',
+        { class: 'journal-entry', href: `#world/${topic.id}/${id}` },
+        el('div', {}, el('strong', { text: definitions[id].name }), el('small', { text: topic.name })),
+        el('span', {
+          text: `${progress.completed.includes(id) ? '✓ EXPLORED ' : ''}${progress.mined.includes(id) ? '⛏ MINED ' : ''}${progress.quizzes.includes(id) ? '✦ QUEST' : ''}`,
+        })
+      );
+      row.onclick = () => $('journalDialog').close();
+      host.append(row);
+    }
+  $('journalDialog').showModal();
 }
+
+// ---------- Routing ----------
+
+function showHome() {
+  lab.close();
+  closeArcade();
+  $('builder').hidden = true;
+  $('library').hidden = false;
+  setNav('libraryLink');
+  applyFilter();
+  requestAnimationFrame(() => {
+    heroWorld.draw();
+    if (location.hash === '#courses') $('courses').scrollIntoView();
+  });
+}
+
+function setNav(id) {
+  document.querySelectorAll('.nav-link').forEach(a => a.classList.toggle('active', a.id === id));
+}
+
 function route() {
-  const buildMatch = location.hash.match(/^#build\/([a-z]+)$/);
-  $('builder').hidden = !buildMatch;
-  if (buildMatch) {
-    pause();
-    $('lab').hidden = true;
+  const hash = location.hash;
+  const build = hash.match(/^#build\/([a-z]+)$/);
+  const world = hash.match(/^#world\/([a-z]+)(?:\/([A-Za-z]+))?(?:\/(mine))?$/);
+  const arcade = hash.match(/^#arcade(?:\/([a-z-]+))?$/);
+  $('builder').hidden = !build;
+  if (build) {
+    lab.close();
+    closeArcade();
     $('library').hidden = true;
-    $('libraryLink').classList.remove('active');
-    builder.open(buildMatch[1]);
+    setNav('');
+    builder.open(build[1]);
     window.scrollTo(0, 0);
     return;
   }
-  const match = location.hash.match(/^#world\/([a-z]+)(?:\/([a-z]+))?$/);
-  if (match) {
-    openWorld(match[1], match[2]);
-  } else {
-    pause();
-    $('lab').hidden = true;
-    $('library').hidden = false;
-    $('libraryLink').classList.add('active');
-    applyFilter();
-    requestAnimationFrame(() => {
-      heroWorld.draw();
-      if (location.hash === '#courses') $('courses').scrollIntoView();
-    });
-  }
-}
-function switchTab(name) {
-  tab = name;
-  $('learnPanel').hidden = name !== 'learn';
-  $('practicePanel').hidden = name !== 'practice';
-  document
-    .querySelectorAll('[data-tab]')
-    .forEach(b => b.setAttribute('aria-selected', b.dataset.tab === name));
-}
-let quizIndex = 0;
-function renderPractice() {
-  const def = definitions[algorithm];
-  const quiz = def.quiz;
-  quizIndex = Math.min(quizIndex, quiz.length - 1);
-  const q = quiz[quizIndex];
-  $('question').textContent = q.question;
-  $('quizProgress').textContent = `QUESTION ${quizIndex + 1} OF ${quiz.length}`;
-  $('answerFeedback').textContent = progress.quizzes.includes(algorithm)
-    ? '✓ Quest completed. You can practice again anytime.'
-    : '';
-  $('nextQuestion').hidden = true;
-  $('answers').replaceChildren(
-    ...q.answers.map((text, i) => {
-      const button = document.createElement('button');
-      button.className = 'answer';
-      button.innerHTML = `<span>${String.fromCharCode(65 + i)}</span>`;
-      button.append(document.createTextNode(text));
-      button.onclick = () => {
-        const correct = i === q.correct;
-        button.classList.toggle('correct', correct);
-        button.classList.toggle('incorrect', !correct);
-        $('answerFeedback').textContent = correct
-          ? `Correct! ${q.reason}`
-          : 'Not quite. Revisit the lesson, or try another answer.';
-        if (correct) {
-          [...$('answers').children].forEach(b => (b.disabled = true));
-          if (quizIndex < quiz.length - 1) {
-            $('nextQuestion').hidden = false;
-          } else if (!progress.quizzes.includes(algorithm)) {
-            progress.quizzes.push(algorithm);
-            persist();
-            toast('✦ Quest complete! +25 XP.');
-          } else $('nextQuestion').hidden = false;
-        }
-      };
-      return button;
-    })
-  );
-}
-function randomValues() {
-  const n = currentTopic.id === 'list' ? 5 : currentTopic.id === 'tree' || currentTopic.id === 'heap' ? 7 : 8;
-  return Array.from(
-    { length: n },
-    () => 1 + Math.floor(Math.random() * (currentTopic.id === 'sorting' ? 12 : 20))
-  );
-}
-function editData() {
-  $('dataInput').value = values.join(', ');
-  $('targetInput').value = target;
-  $('targetLabel').hidden = !definitions[algorithm].target;
-  $('error').textContent = '';
-  const max = currentTopic.id === 'sorting' || currentTopic.id === 'stack' ? 20 : 99;
-  $('inputHelp').textContent = `Enter 3–10 whole numbers from 1 to ${max}, separated by commas.`;
-  $('dataNote').textContent =
-    algorithm === 'binary'
-      ? 'Binary search sorts your input automatically before searching.'
-      : currentTopic.id === 'tree'
-        ? 'Values are inserted in this order. Duplicate values are omitted.'
-        : algorithm === 'hash'
-          ? 'Chest address = value mod 11. Up to 10 items keep at least one chest empty.'
-          : '';
-  $('dataDialog').showModal();
-}
-function applyData() {
-  const pieces = $('dataInput')
-      .value.split(',')
-      .map(x => x.trim()),
-    a = pieces.map(Number),
-    t = Number($('targetInput').value);
-  const max = currentTopic.id === 'sorting' || currentTopic.id === 'stack' ? 20 : 99;
-  if (
-    pieces.some(p => !p) ||
-    a.length < 3 ||
-    a.length > 10 ||
-    a.some(v => !Number.isInteger(v) || v < 1 || v > max)
-  ) {
-    $('error').textContent = `Use 3–10 whole numbers between 1 and ${max}, separated by commas.`;
+  if (world) {
+    closeArcade();
+    $('library').hidden = true;
+    setNav('');
+    lab.open(world[1], world[2], { mode: world[3] ? 'mine' : undefined });
     return;
   }
-  if (definitions[algorithm].target && (!Number.isInteger(t) || t < 1 || t > 99)) {
-    $('error').textContent = 'Choose a whole-number target between 1 and 99.';
+  if (arcade) {
+    lab.close();
+    $('library').hidden = true;
+    setNav('arcadeLink');
+    openArcade(arcade[1]);
+    window.scrollTo(0, 0);
     return;
   }
-  values = a;
-  target = t;
-  datasets.set(currentTopic.id, [...values]);
-  prepare();
-  $('dataDialog').close();
+  showHome();
 }
-function showJournal() {
-  $('journalEntries').replaceChildren();
-  if (!progress.completed.length && !progress.quizzes.length) {
-    $('journalEntries').innerHTML =
-      '<p>Your journal is waiting for its first adventure. Finish an animation or solve a practice quest to earn XP.</p>';
-  } else {
-    for (const topic of topics)
-      for (const id of topic.algorithms) {
-        if (!progress.completed.includes(id) && !progress.quizzes.includes(id)) continue;
-        const row = document.createElement('a');
-        row.className = 'journal-entry';
-        row.href = `#world/${topic.id}`;
-        row.innerHTML = `<div><strong>${definitions[id].name}</strong><small>${topic.name}</small></div><span>${progress.completed.includes(id) ? '✓ EXPLORED' : ''}${progress.quizzes.includes(id) ? ' ✦ QUEST' : ''}</span>`;
-        row.onclick = () => {
-          $('journalDialog').close();
-          if (location.hash === `#world/${topic.id}`) openWorld(topic.id);
-          setTimeout(() => setAlgorithm(id), 0);
-        };
-        $('journalEntries').append(row);
-      }
-  }
-  $('journalDialog').showModal();
-}
+
+// ---------- Wiring ----------
+
 $('start').onclick = () => (location.hash = 'world/sorting');
 $('topicSearch').oninput = applyFilter;
 document.querySelectorAll('[data-filter]').forEach(
@@ -519,104 +322,6 @@ document.querySelectorAll('[data-filter]').forEach(
       applyFilter();
     })
 );
-$('algorithm').onchange = e => {
-  history.replaceState(null, '', `#world/${currentTopic.id}/${e.target.value}`);
-  setAlgorithm(e.target.value);
-};
-$('play').onclick = play;
-$('step').onclick = () => step(1);
-$('back').onclick = () => step(-1);
-$('reset').onclick = () => {
-  pause();
-  moveTo(0, false);
-  pause();
-};
-$('timeline').oninput = e => {
-  pause();
-  moveTo(Number(e.target.value));
-  pause();
-};
-$('speed').onchange = () => {
-  if (timer) {
-    clearTimeout(timer);
-    timer = setTimeout(tick, 850 / Number($('speed').value));
-  }
-};
-$('shuffle').onclick = () => {
-  values = randomValues();
-  datasets.set(currentTopic.id, [...values]);
-  prepare();
-};
-$('edit').onclick = editData;
-$('cancel').onclick = () => $('dataDialog').close();
-$('apply').onclick = applyData;
-document.querySelectorAll('[data-preset]').forEach(
-  b =>
-    (b.onclick = () => {
-      let a = b.dataset.preset === 'duplicates' ? [5, 3, 5, 2, 3, 8] : randomValues();
-      if (b.dataset.preset === 'sorted') a.sort((a, b) => a - b);
-      if (b.dataset.preset === 'reversed') a.sort((a, b) => b - a);
-      $('dataInput').value = a.join(', ');
-    })
-);
-document.querySelectorAll('[data-tab]').forEach(b => (b.onclick = () => switchTab(b.dataset.tab)));
-$('returnLesson').onclick = () => switchTab('learn');
-$('nextQuestion').onclick = () => {
-  quizIndex = (quizIndex + 1) % definitions[algorithm].quiz.length;
-  renderPractice();
-};
-$('practiceNav').onclick = () => {
-  if ($('lab').hidden) {
-    location.hash = 'world/sorting';
-    setTimeout(() => switchTab('practice'), 0);
-  } else switchTab('practice');
-};
-$('journalNav').onclick = showJournal;
-$('closeJournal').onclick = () => $('journalDialog').close();
-$('resetCamera').onclick = () => world.reset();
-$('dayNight').onclick = () => {
-  world.night = !world.night;
-  $('dayNight').textContent = world.night ? '☀' : '☾';
-  $('dayNight').setAttribute('aria-label', world.night ? 'Switch to day' : 'Switch to night');
-  world.draw();
-};
-$('sound').onclick = () => {
-  sound = !sound;
-  $('sound').style.color = sound ? '#b8ed80' : '';
-  $('sound').setAttribute('aria-label', sound ? 'Disable sound' : 'Enable sound');
-  soundBlock();
-  toast(sound ? 'Block sounds on' : 'Block sounds off');
-};
-document.addEventListener('keydown', e => {
-  if (
-    !$('builder').hidden ||
-    document.querySelector('dialog[open]') ||
-    ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)
-  )
-    return;
-  if (e.key === '/' && !$('library').hidden) {
-    e.preventDefault();
-    $('topicSearch').focus();
-    return;
-  }
-  if ($('lab').hidden || document.activeElement.tagName === 'BUTTON') return;
-  if (e.code === 'Space') {
-    e.preventDefault();
-    play();
-  }
-  if (e.key === 'ArrowRight') {
-    e.preventDefault();
-    step(1);
-  }
-  if (e.key === 'ArrowLeft') {
-    e.preventDefault();
-    step(-1);
-  }
-});
-window.addEventListener('hashchange', route);
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) pause();
-});
 document.querySelectorAll('[data-course]').forEach(
   b =>
     (b.onclick = () => {
@@ -624,6 +329,78 @@ document.querySelectorAll('[data-course]').forEach(
       buildCourseMap();
     })
 );
+$('practiceNav').onclick = () => {
+  if (!lab.isOpen) {
+    location.hash = 'world/sorting';
+    setTimeout(() => lab.switchTab('practice'), 0);
+  } else lab.switchTab('practice');
+};
+$('journalNav').onclick = showJournal;
+$('closeJournal').onclick = () => $('journalDialog').close();
+$('settingsNav').onclick = openSettings;
+$('sound').onclick = () => {
+  const on = sound.set(!sound.enabled);
+  setSetting('sound', on);
+  $('sound').classList.toggle('on', on);
+  $('sound').setAttribute('aria-label', on ? 'Disable sound' : 'Enable sound');
+  sound.step(0);
+  toast(on ? 'Block sounds on' : 'Block sounds off');
+};
+if (progress.settings.sound) {
+  // The browser blocks audio until the first interaction, so arm it lazily.
+  const arm = () => {
+    sound.set(true);
+    $('sound').classList.add('on');
+    $('sound').setAttribute('aria-label', 'Disable sound');
+    document.removeEventListener('pointerdown', arm);
+  };
+  document.addEventListener('pointerdown', arm);
+  $('sound').classList.add('on');
+}
+
+document.addEventListener('keydown', e => {
+  const typing =
+    ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName) ||
+    document.activeElement.isContentEditable;
+  if (!$('builder').hidden || document.querySelector('dialog[open]') || typing) return;
+  if (e.key === '/' && !$('library').hidden) {
+    e.preventDefault();
+    $('topicSearch').focus();
+    return;
+  }
+  if (e.key === '?') {
+    openSettings('keys');
+    return;
+  }
+  if (!lab.isOpen || document.activeElement.tagName === 'BUTTON') return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    lab.play();
+  }
+  if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    lab.step(1);
+  }
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    lab.step(-1);
+  }
+  if (e.key.toLowerCase() === 'm') $('modeMine').click();
+  if (e.key.toLowerCase() === 'w') $('modeWatch').click();
+});
+window.addEventListener('hashchange', route);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) lab.pause();
+});
+onChange(event => {
+  if (event.type === 'xp' || event.type === 'reset' || event.type === 'import') buildCourseMap();
+});
+
+touchStreak();
 buildCourseMap();
-buildCards();
+buildHome();
 route();
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}

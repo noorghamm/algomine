@@ -1,0 +1,11 @@
+{
+  "name": "AlgoMine",
+  "short_name": "AlgoMine",
+  "description": "Learn data structures and algorithms in a world made of blocks.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#171d17",
+  "theme_color": "#171d17",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

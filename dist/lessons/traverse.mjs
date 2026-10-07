@@ -10,11 +10,21 @@ export default {
     'Begin at the head and follow each next pointer. The redstone connections show how nodes link together in memory.',
   insight:
     'Unlike an array, a linked list does not offer constant-time indexed access. To reach a node, follow the preceding links.',
-  code: ['current = head', 'while current != null', '  visit(current.value)', '  current = current.next', 'return visited values'],
+  code: [
+    'current = head',
+    'while current != null',
+    '  visit(current.value)',
+    '  current = current.next',
+    'return visited values',
+  ],
   quiz: [
     {
       question: 'How do you reach the fourth node of a singly linked list?',
-      answers: ['Follow next pointers from the head', 'Jump directly to index 3', 'Follow the tail pointer backward'],
+      answers: [
+        'Follow next pointers from the head',
+        'Jump directly to index 3',
+        'Follow the tail pointer backward',
+      ],
       correct: 0,
       reason: 'A singly linked list exposes a next pointer at each node, so traversal starts at the head.',
     },
@@ -39,7 +49,9 @@ export default {
       r.marked.push(i);
       r.output.push(a[i]);
       r.emit(
-        i === a.length - 1 ? 'The next pointer is null. End of the list.' : `Follow next to node ${a[i + 1]}.`,
+        i === a.length - 1
+          ? 'The next pointer is null. End of the list.'
+          : `Follow next to node ${a[i + 1]}.`,
         3,
         [i],
         {
@@ -47,7 +59,11 @@ export default {
           ask:
             i < a.length - 1
               ? ask('index', 'Which node is visited next?', i + 1)
-              : ask('choice', 'What happens now?', 0, ['The traversal ends', 'Go back to the head', 'Visit a random node']),
+              : ask('choice', 'What happens now?', 0, [
+                  'The traversal ends',
+                  'Go back to the head',
+                  'Visit a random node',
+                ]),
         }
       );
     }

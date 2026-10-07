@@ -1,6 +1,8 @@
 import { VoxelWorld } from './world.mjs';
 import { BuildState, MATERIALS, BUILD_LIMIT, nextToFace } from './build-state.mjs';
 import { topics } from './algorithms.mjs';
+import { recordBlocks } from './progress.mjs';
+import { sound } from './sound.mjs';
 const $ = id => document.getElementById(id);
 const STORAGE = 'algomine-builds-v1';
 export class Builder {
@@ -163,6 +165,11 @@ export class Builder {
       return;
     }
     this.selection = { x: target.x, y: target.y };
+    if (this.tool === 'mine') sound.mine();
+    else {
+      sound.place();
+      recordBlocks(1);
+    }
     this.changed(this.tool === 'mine' ? 'Block mined.' : 'Block placed.');
   }
   actAtCursor(tool = this.tool) {
@@ -174,6 +181,11 @@ export class Builder {
       return;
     }
     this.world.buildHover = null;
+    if (tool === 'mine') sound.mine();
+    else {
+      sound.place();
+      recordBlocks(1);
+    }
     this.changed(tool === 'mine' ? 'Top block mined.' : 'Block placed at the selected column.');
   }
   history(action) {

@@ -7,7 +7,8 @@ export default {
   name: 'Depth-first search',
   time: 'O(V + E)',
   space: 'O(V)',
-  intro: 'Follow one path as far as possible, then backtrack. A stack remembers nodes still waiting to be explored.',
+  intro:
+    'Follow one path as far as possible, then backtrack. A stack remembers nodes still waiting to be explored.',
   insight:
     'DFS is useful for connectivity, cycles, and topological reasoning. Here, reverse-order pushes make smaller neighbors get visited first.',
   code: [
@@ -22,19 +23,32 @@ export default {
   quiz: [
     {
       question: 'Which behavior describes DFS?',
-      answers: ['Explore every immediate neighbor first', 'Always select the shortest edge', 'Explore deeply, then backtrack'],
+      answers: [
+        'Explore every immediate neighbor first',
+        'Always select the shortest edge',
+        'Explore deeply, then backtrack',
+      ],
       correct: 2,
-      reason: 'DFS follows a branch until it runs out of unvisited neighbors, then returns to another branch.',
+      reason:
+        'DFS follows a branch until it runs out of unvisited neighbors, then returns to another branch.',
     },
     {
       question: 'Why can the same node appear on the stack more than once in this version?',
-      answers: ['Nodes are marked when visited, not when pushed', 'The graph has duplicate edges', 'The stack is unbounded'],
+      answers: [
+        'Nodes are marked when visited, not when pushed',
+        'The graph has duplicate edges',
+        'The stack is unbounded',
+      ],
       correct: 0,
       reason: 'Two neighbors may push the same node before it is popped, so the visited check skips repeats.',
     },
     {
       question: 'Which task is DFS better suited to than BFS?',
-      answers: ['Detecting cycles and ordering dependencies', 'Finding the fewest-edge path', 'Counting layers'],
+      answers: [
+        'Detecting cycles and ordering dependencies',
+        'Finding the fewest-edge path',
+        'Counting layers',
+      ],
       correct: 0,
       reason: 'The deep, backtracking structure of DFS naturally exposes back edges and finish order.',
     },

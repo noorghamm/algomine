@@ -8,7 +8,8 @@ export default {
   space: 'O(1)',
   target: true,
   intro: 'Inspect each block from left to right. Stop at the first matching value, or after the final block.',
-  insight: 'Linear search works with unsorted data. It can stop after one comparison, but its worst case checks every value.',
+  insight:
+    'Linear search works with unsorted data. It can stop after one comparison, but its worst case checks every value.',
   code: ['for i = 0 to n − 1', '  inspect a[i]', '  if a[i] == target: return i', 'return not found'],
   quiz: [
     {

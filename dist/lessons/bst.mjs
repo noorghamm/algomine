@@ -53,11 +53,12 @@ export default {
       const n = nodes[id];
       r.compare();
       r.emit(`Compare target ${target} with node ${n.value}.`, 2, [id], {
-        ask: ask('choice', `${target} versus ${n.value}: which way?`, target === n.value ? 2 : target < n.value ? 0 : 1, [
-          'Go left',
-          'Go right',
-          'Found it',
-        ]),
+        ask: ask(
+          'choice',
+          `${target} versus ${n.value}: which way?`,
+          target === n.value ? 2 : target < n.value ? 0 : 1,
+          ['Go left', 'Go right', 'Found it']
+        ),
       });
       if (n.value === target) {
         r.marked.push(id);

@@ -23,7 +23,11 @@ export default {
   quiz: [
     {
       question: 'Why does this merge sort choose the left block when two keys are equal?',
-      answers: ['To avoid allocating memory', 'To preserve their original relative order', 'To reduce the recursion depth'],
+      answers: [
+        'To avoid allocating memory',
+        'To preserve their original relative order',
+        'To reduce the recursion depth',
+      ],
       correct: 1,
       reason: 'Taking equal keys from the left half first preserves stability across the merge.',
     },
@@ -45,7 +49,10 @@ export default {
     const sort = (lo, hi, depth = 0) => {
       if (lo >= hi) return;
       const mid = Math.floor((lo + hi) / 2);
-      r.emit(`Split indices ${lo}–${hi} at ${mid}. Recursion depth ${depth}.`, 2, [lo, hi], { range: [lo, hi], depth });
+      r.emit(`Split indices ${lo}–${hi} at ${mid}. Recursion depth ${depth}.`, 2, [lo, hi], {
+        range: [lo, hi],
+        depth,
+      });
       sort(lo, mid, depth + 1);
       sort(mid + 1, hi, depth + 1);
       const left = a.slice(lo, mid + 1),

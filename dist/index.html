@@ -10,6 +10,8 @@
     />
     <title>AlgoMine — Learn it. Build it. Get it.</title>
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -27,10 +29,16 @@
         ><button class="nav-link" id="journalNav">My journal <span id="journalCount">0</span></button>
       </nav>
       <div class="header-right">
-        <span class="xp-label">✦ <b id="xp">0</b> XP</span
-        ><button id="sound" class="icon-button" aria-label="Enable sound" title="Toggle block sounds">
+        <span class="streak-badge" id="streakBadge" title="Day streak">☀ 0</span>
+        <div class="level-wrap">
+          <span class="level-line"><b id="levelNumber">LVL 0</b> <span id="levelTitle">NEWCOMER</span></span>
+          <div class="level-bar" id="levelBar"><div class="level-fill" id="levelFill"></div></div>
+          <span class="xp-label">✦ <b id="xp">0</b> XP</span>
+        </div>
+        <button id="sound" class="icon-button" aria-label="Enable sound" title="Toggle block sounds">
           ♫
         </button>
+        <button id="settingsNav" class="icon-button" aria-label="Settings" title="Settings">⚙</button>
       </div>
     </header>
     <main id="library">
@@ -49,8 +57,8 @@
             ><a href="#build/sorting" class="secondary build-hero-link">BUILD YOUR WORLD</a>
           </div>
           <div class="hero-bottom">
-            <span><i class="mini-square"></i> 8 interactive worlds</span
-            ><span><i class="mini-square blue"></i> 16 ways to learn</span
+            <span><i class="mini-square"></i> <b id="worldCount">8</b> interactive worlds</span
+            ><span><i class="mini-square blue"></i> <b id="lessonCount">16</b> ways to learn</span
             ><span><i class="mini-square gold"></i> Your own pace</span>
           </div>
         </div>
@@ -77,7 +85,7 @@
             <h2 id="courseTitle">Two courses. One block-built world.</h2>
             <p>Follow your lecture topics, enter a playable lesson, or scout what comes next.</p>
           </div>
-          <span class="course-stamp">2 COURSE PATHS<br />16 PLAYABLE LESSONS</span>
+          <span class="course-stamp" id="courseStamp">2 COURSE PATHS<br />16 PLAYABLE LESSONS</span>
         </div>
         <div class="course-tabs" role="group" aria-label="Choose course">
           <button data-course="ads" aria-pressed="true">ADS 2 <span>FOUNDATIONS</span></button
@@ -107,7 +115,7 @@
         </div>
         <div class="filter-row">
           <div class="filters" aria-label="Topic categories">
-            <button data-filter="All worlds" class="active">All worlds <span>8</span></button
+            <button data-filter="All worlds" class="active">All worlds <span id="filterAllCount">8</span></button
             ><button data-filter="Data structures">Data structures</button
             ><button data-filter="Algorithms">Algorithms</button>
           </div>
@@ -115,6 +123,17 @@
         </div>
         <div id="topicGrid" class="topic-grid"></div>
         <div id="empty" class="empty" hidden>No worlds found. Try “tree”, “sorting”, or “graph”.</div>
+      </section>
+      <section class="learning-strip arcade-strip">
+        <div class="strip-icon">▦</div>
+        <div>
+          <h3>The Arcade: play the algorithms.</h3>
+          <p>
+            Rebuild scrambled pseudocode, guess the sort, race Big-O, build trees by hand. High scores earn
+            XP.
+          </p>
+        </div>
+        <a href="#arcade" class="text-link">Enter the arcade →</a>
       </section>
       <section class="learning-strip">
         <div class="strip-icon">▧</div>
@@ -134,6 +153,7 @@
       <div class="lab-top">
         <a href="#library" class="back-link">← ALL WORLDS</a>
         <div class="breadcrumb">OVERWORLD <span>/</span> <b id="biomeName">SORTING PLAINS</b></div>
+        <span class="mine-badge" id="mineBadge" hidden>⛏</span>
         <span class="lab-completed" id="completionBadge">WORLD IN PROGRESS</span>
       </div>
       <div class="lab-heading">
@@ -141,8 +161,12 @@
           <div class="eyebrow" id="labCategory">ALGORITHMS</div>
           <h1 id="labTitle">Sorting Plains</h1>
         </div>
-        <select id="algorithm" aria-label="Choose algorithm"></select
-        ><a id="buildNav" href="#build/sorting" class="secondary">▧ BUILD MODE</a
+        <select id="algorithm" aria-label="Choose algorithm"></select>
+        <div class="mode-toggle" role="group" aria-label="Lesson mode">
+          <button id="modeWatch" aria-pressed="true">▶ WATCH</button>
+          <button id="modeMine" aria-pressed="false">⛏ MINE</button>
+        </div>
+        <a id="buildNav" href="#build/sorting" class="secondary">▧ BUILD MODE</a
         ><button id="edit" class="secondary">▦ INVENTORY</button>
       </div>
       <div class="lab-grid">
@@ -176,7 +200,17 @@
             <span id="auxLabel">OUTPUT</span>
             <div id="auxValues"></div>
           </div>
+          <div id="trays" hidden></div>
           <div class="playback">
+            <div class="ask-panel" id="askPanel" hidden>
+              <span class="eyebrow">⛏ YOUR MOVE</span>
+              <p id="askPrompt" class="ask-prompt"></p>
+              <div id="askOptions" class="ask-options"></div>
+              <p id="askFeedback" class="ask-feedback" aria-live="polite"></p>
+            </div>
+            <p class="mine-hint" id="mineHint" hidden>
+              This lesson has no decision points yet. Step through it to mine it.
+            </p>
             <div class="timeline">
               <input id="timeline" aria-label="Animation timeline" type="range" min="0" value="0" /><span
                 id="stepCount"
@@ -189,7 +223,7 @@
                 ▏◀</button
               ><button id="play" class="primary">▶ PLAY</button
               ><button id="step" class="icon-button" aria-label="Next step" title="Next step">▶▕</button>
-              <div class="speed">
+              <div class="speed" id="speedWrap">
                 <label for="speed">SPEED</label
                 ><select id="speed" aria-label="Playback speed">
                   <option value="0.5">0.5×</option>
@@ -202,7 +236,8 @@
             </div>
           </div>
           <div class="keyboard-hint">
-            <kbd>SPACE</kbd> play / pause <kbd>← →</kbd> step through
+            <kbd>SPACE</kbd> play / pause <kbd>← →</kbd> step <kbd>M</kbd> mine <kbd>W</kbd> watch
+            <span id="mineScore" class="mine-score"></span>
             <span>Build understanding at your own pace.</span>
           </div>
         </section>
@@ -354,7 +389,7 @@
         </div>
         <button id="cancel" class="icon-button" aria-label="Close editor">×</button>
       </div>
-      <label for="dataInput">BLOCK VALUES</label>
+      <label for="dataInput" id="dataLabel">BLOCK VALUES</label>
       <p id="inputHelp">Enter 3–10 whole numbers from 1 to 20, separated by commas.</p>
       <input id="dataInput" autocomplete="off" value="7, 3, 9, 4, 6, 2, 8, 5" />
       <div class="presets">
@@ -362,7 +397,8 @@
         ><button data-preset="reversed">Reversed</button><button data-preset="duplicates">Duplicates</button>
       </div>
       <label id="targetLabel" for="targetInput"
-        >SEARCH TARGET<input id="targetInput" type="number" min="1" max="99" value="6"
+        ><span id="targetText">SEARCH TARGET</span
+        ><input id="targetInput" type="number" min="0" max="99" value="6"
       /></label>
       <p id="dataNote"></p>
       <p id="error" role="alert"></p>
@@ -378,6 +414,76 @@
       </div>
       <p>Your completed lessons and knowledge checks. Saved in this browser.</p>
       <div id="journalEntries"></div>
+    </dialog>
+    <main id="arcade" hidden>
+      <div class="lab-top">
+        <a href="#library" class="back-link">← ALL WORLDS</a>
+        <span class="eyebrow">THE ARCADE</span>
+      </div>
+      <section id="arcadeHub">
+        <div class="arcade-heading">
+          <div>
+            <span class="eyebrow">PLAY THE ALGORITHMS</span>
+            <h1>Insert coin.</h1>
+            <p>Short games built from every lesson. Scores earn XP and the best ones go in your journal.</p>
+          </div>
+        </div>
+        <div id="arcadeGrid" class="game-grid"></div>
+      </section>
+      <section id="arcadeStage" hidden>
+        <div class="arcade-stage-top">
+          <button id="arcadeBack" class="secondary">← ALL GAMES</button>
+          <div>
+            <h1 id="arcadeTitle"></h1>
+            <p id="arcadeTagline"></p>
+          </div>
+          <span class="course-stamp" id="arcadeBest">NO SCORE YET</span>
+        </div>
+        <div id="arcadeGame" class="arcade-game"></div>
+      </section>
+    </main>
+    <dialog id="settingsDialog">
+      <div class="dialog-heading">
+        <div>
+          <span class="eyebrow">OPTIONS</span>
+          <h2>Settings</h2>
+        </div>
+        <button id="closeSettings" class="icon-button" aria-label="Close settings">×</button>
+      </div>
+      <fieldset class="setting-group">
+        <legend>THEME</legend>
+        <label><input type="radio" name="theme" value="dark" /> Dark (cave)</label>
+        <label><input type="radio" name="theme" value="light" /> Light (overworld)</label>
+        <label><input type="radio" name="theme" value="auto" /> Follow system</label>
+      </fieldset>
+      <fieldset class="setting-group">
+        <legend>PLAY</legend>
+        <label><input type="checkbox" id="settingSound" /> Block sounds</label>
+        <label><input type="checkbox" id="settingMotion" /> Reduce motion</label>
+        <label><input type="checkbox" id="settingHints" /> Show hints in Mine Mode</label>
+      </fieldset>
+      <fieldset class="setting-group">
+        <legend>PROGRESS</legend>
+        <p>Progress lives in this browser. Export it to move between devices.</p>
+        <div class="setting-actions">
+          <button id="exportProgress" class="secondary">EXPORT SAVE</button>
+          <label class="secondary file-button"
+            >IMPORT SAVE<input type="file" id="importProgress" accept="application/json" hidden
+          /></label>
+          <button id="resetProgress" class="secondary danger">RESET ALL PROGRESS</button>
+        </div>
+      </fieldset>
+      <fieldset class="setting-group" id="keyboardHelp">
+        <legend>KEYBOARD</legend>
+        <p>
+          <kbd>SPACE</kbd> play or pause · <kbd>←</kbd> <kbd>→</kbd> step · <kbd>M</kbd> Mine Mode ·
+          <kbd>W</kbd> Watch · <kbd>/</kbd> search · <kbd>?</kbd> this panel
+        </p>
+        <p>
+          Build Mode: arrows move the cursor, <kbd>SPACE</kbd> places, <kbd>X</kbd> mines, <kbd>1</kbd> to
+          <kbd>8</kbd> pick a material, <kbd>⌘Z</kbd> undoes.
+        </p>
+      </fieldset>
     </dialog>
     <div id="toast" role="status"></div>
     <script type="module" src="app.js"></script>

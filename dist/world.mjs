@@ -26,6 +26,23 @@ const themes = {
   water: { sky: ['#98c5d1', '#d1e4d4'], ground: 'grass' },
   ice: { sky: ['#a9cbd9', '#dce8da'], ground: 'ice' },
   purple: { sky: ['#b8b6ce', '#d6cccf'], ground: 'stone' },
+  canopy: { sky: ['#7fb59a', '#d2e6c2'], ground: 'grass' },
+  rune: { sky: ['#8f82bd', '#d9cdea'], ground: 'purple' },
+  forge: { sky: ['#b07c62', '#e6c6a2'], ground: 'red' },
+};
+// Which view a topic draws by default. A lesson can override it with lesson.view.
+export const defaultViews = {
+  sorting: 'bars',
+  search: 'array',
+  list: 'list',
+  hash: 'hash',
+  stack: 'stack',
+  tree: 'tree',
+  heap: 'tree',
+  balanced: 'tree',
+  graph: 'graph',
+  strings: 'text',
+  compress: 'forest',
 };
 const noise = (x, y, z, n) =>
   Math.abs(Math.sin(x * 127.1 + y * 311.7 + z * 74.7 + n * 43.1) * 43758.5453) % 1;
@@ -460,7 +477,8 @@ export class VoxelWorld {
         }
       objects.push({ x, y, z: 4, t: terrain === 'ice' ? 'ice' : 'leaf', detail: true });
     };
-    if (!['tree', 'heap', 'graph'].includes(topic)) {
+    const viewName = this.options.view || defaultViews[topic] || 'bars';
+    if (!['tree', 'forest', 'graph', 'grid'].includes(viewName)) {
       tree(-6, -5);
       if (!thumbnail) tree(7, -5);
       else tree(5, -4);
@@ -480,25 +498,27 @@ export class VoxelWorld {
         ];
     const f = frame || { values: [7, 3, 9, 4, 6, 2], active: [], marked: [], discarded: [], nodes: [] };
     const a = f.values || [];
-    const material = i =>
-      (f.active || []).includes(i)
+    let view = this.options.view || defaultViews[topic] || 'bars';
+    if (view === 'stack' && algorithm === 'queue') view = 'queue';
+    const baseBlock = view === 'hash' ? 'chest' : view === 'array' ? 'sand' : 'grass';
+    const material = (i, list = f) =>
+      (list.active || []).includes(i)
         ? f.swapping
           ? 'red'
           : 'gold'
-        : (f.discarded || []).includes(i)
+        : (list.discarded || []).includes(i)
           ? 'dark'
-          : (f.marked || []).includes(i)
+          : (list.marked || []).includes(i)
             ? 'diamond'
-            : topic === 'hash'
-              ? 'chest'
-              : topic === 'search'
-                ? 'sand'
-                : 'grass';
+            : baseBlock;
     const label = (u, v, z, text, id, sub) => {
       const [x, y] = uv(u + 0.5, v);
       labels.push({ x, y, z, text, id, sub });
     };
-    if (topic === 'sorting') {
+    const subLabel = (u, v, id) => {
+      if (f.sub && f.sub[id] !== undefined && !thumbnail) label(u, v + 1.05, 0.2, f.sub[id], null, 'sub');
+    };
+    if (view === 'bars') {
       a.forEach((value, i) => {
         let slot = i;
         if (this.transition) {
@@ -510,68 +530,90 @@ export class VoxelWorld {
         }
         const u = (slot - (a.length - 1) / 2) * (thumbnail ? 1.65 : 1.8),
           v = 0,
-          height = Math.max(1, Math.ceil(value * 0.4));
+          height = Math.max(1, Math.ceil(Number(value) * 0.4));
         for (let z = 0; z < height; z++)
           addUV(u, v, z, z === height - 1 ? material(i) : material(i) === 'grass' ? 'dirt' : material(i));
         label(u, 0, height + 0.35, value, i);
         if (!thumbnail) label(u, 2.2, 0, i, null, 'index');
       });
-    } else if (['search', 'list', 'hash'].includes(topic)) {
-      const space = topic === 'hash' ? 1.5 : 1.8;
+      if (f.range && !thumbnail) {
+        const [lo, hi] = f.range;
+        for (let i = lo; i <= hi; i++) addUV((i - (a.length - 1) / 2) * 1.8, 0, -0.98, 'gold', ground, false);
+      }
+    } else if (['array', 'list', 'hash'].includes(view)) {
+      const space = view === 'hash' ? 1.5 : 1.8;
       a.forEach((value, i) => {
         const u = (i - (a.length - 1) / 2) * space;
-        addUV(u, 0, 0, material(i));
-        label(u, 0, 1.55, value === null ? '·' : value, i);
+        if (Array.isArray(value)) {
+          // A chain: stack one chest per stored value.
+          if (!value.length) {
+            addUV(u, 0, -0.98, 'dark', ground, false);
+            label(u, 0, 0.5, '·', i);
+          } else
+            value.forEach((item, k) => {
+              addUV(u, 0, k, k === value.length - 1 ? material(i) : 'chest');
+              label(u, 0, k + 0.75, item, k === 0 ? i : null);
+            });
+        } else {
+          addUV(u, 0, 0, material(i));
+          label(u, 0, 1.55, value === null ? '·' : value, i);
+        }
         if (!thumbnail) label(u, 2, 0, i, null, 'index');
-        if (topic === 'list' && i < a.length - 1)
+        subLabel(u, 1.3, i);
+        if (view === 'list' && i < a.length - 1)
           lines.push({
             from: [u + 0.7, 0, 0.45],
             to: [u + space + 0.3, 0, 0.45],
             active: f.activeEdge?.[0] === i,
           });
       });
-    } else if (topic === 'stack') {
-      if (algorithm === 'queue') {
-        a.forEach((value, i) => {
-          const u = (i - (a.length - 1) / 2) * 1.8;
-          addUV(u, 0, 0, material(i) === 'grass' ? 'chest' : material(i));
-          label(u, 0, 1.65, value, i);
-        });
-        if (a.length && !thumbnail) {
-          label(-(a.length - 1) * 0.9, 2, 0, 'FRONT', null, 'index');
-          label((a.length - 1) * 0.9, 2, 0, 'REAR', null, 'index');
-        }
-      } else {
-        a.forEach((value, i) => {
-          addUV(-0.5, 0, i, 'chest');
-          label(1.4, 0, i + 0.5, value, i);
-        });
-        if (!a.length) label(0, 0, 1, 'EMPTY', null, 'index');
-        else if (!thumbnail) label(-0.5, 0, a.length + 0.7, 'TOP', null, 'index');
+    } else if (view === 'queue') {
+      a.forEach((value, i) => {
+        const u = (i - (a.length - 1) / 2) * 1.8;
+        addUV(u, 0, 0, material(i) === 'grass' ? 'chest' : material(i));
+        label(u, 0, 1.65, value, i);
+      });
+      if (a.length && !thumbnail) {
+        label(-(a.length - 1) * 0.9, 2, 0, 'FRONT', null, 'index');
+        label((a.length - 1) * 0.9, 2, 0, 'REAR', null, 'index');
       }
-    } else if (['tree', 'heap'].includes(topic)) {
-      const ns = f.nodes?.length ? f.nodes : makeTree(a, topic === 'heap');
+    } else if (view === 'stack') {
+      a.forEach((value, i) => {
+        addUV(-0.5, 0, i, material(i) === 'grass' ? 'chest' : material(i));
+        label(1.4, 0, i + 0.5, value, i);
+      });
+      if (!a.length) label(0, 0, 1, 'EMPTY', null, 'index');
+      else if (!thumbnail) label(-0.5, 0, a.length + 0.7, 'TOP', null, 'index');
+    } else if (view === 'tree' || view === 'forest') {
+      const ns = f.nodes?.length ? f.nodes : view === 'tree' ? makeTree(a, topic === 'heap') : [];
+      const roots = view === 'forest' ? f.roots || [] : ns.length ? [0] : [];
       const pos = new Map();
       let rank = 0,
         maxDepth = 0;
-      function layout(id, depth) {
+      const layout = (id, depth) => {
         if (id === null || id === undefined) return;
         const n = ns[id];
-        if (!n) return;
+        if (!n || pos.has(id)) return;
         layout(n.left, depth + 1);
         pos.set(id, { u: rank++, depth });
         maxDepth = Math.max(maxDepth, depth);
         layout(n.right, depth + 1);
+      };
+      for (const root of roots) {
+        layout(root, 0);
+        if (view === 'forest') rank += 0.6;
       }
-      if (ns.length) layout(0, 0);
-      for (const [id, p] of pos) {
-        p.u = (p.u - (ns.length - 1) / 2) * Math.min(2.4, 14 / Math.max(1, ns.length - 1));
-        p.v = (p.depth - maxDepth / 2) * (maxDepth > 4 ? 1.8 : 2.8);
+      const count = Math.max(1, rank - 1);
+      const spread = Math.min(2.4, 14 / count);
+      for (const [, p] of pos) {
+        p.u = (p.u - count / 2) * spread;
+        p.v = (p.depth - maxDepth / 2) * (maxDepth > 4 ? 1.6 : maxDepth > 2 ? 2.2 : 2.8);
       }
       for (const n of ns) {
         const p = pos.get(n.id);
+        if (!p) continue;
         for (const child of [n.left, n.right])
-          if (child !== null && pos.has(child)) {
+          if (child !== null && child !== undefined && pos.has(child)) {
             const q = pos.get(child);
             lines.push({
               from: [p.u + 0.5, p.v + 0.5, 0.35],
@@ -581,8 +623,9 @@ export class VoxelWorld {
           }
         addUV(p.u, p.v, 0, material(n.id) === 'grass' ? 'wood' : material(n.id));
         label(p.u, p.v, 1.4, n.value, n.id);
+        subLabel(p.u, p.v, n.id);
       }
-    } else if (topic === 'graph') {
+    } else if (view === 'graph') {
       const points = [
         [-0.5, -5],
         [-4, -1],
@@ -592,18 +635,95 @@ export class VoxelWorld {
         [5.5, 3],
         [-0.5, 6.5],
       ];
-      graphEdges.forEach(([i, j]) => {
-        const p = points[i],
-          q = points[j];
+      const edges = f.edges || graphEdges.map(([from, to]) => ({ from, to }));
+      edges.forEach(e => {
+        const p = points[e.from],
+          q = points[e.to];
+        if (!p || !q) return;
         lines.push({
           from: [p[0] + 0.5, p[1] + 0.5, 0.3],
           to: [q[0] + 0.5, q[1] + 0.5, 0.3],
-          active: f.activeEdge && [i, j].every(k => f.activeEdge.includes(k)),
+          active:
+            e.state === 'active' || (f.activeEdge && [e.from, e.to].every(k => f.activeEdge.includes(k))),
+          state: e.state,
+          weight: e.weight,
+          directed: e.directed,
         });
       });
       points.forEach(([u, v], i) => {
         addUV(u, v, 0, material(i) === 'grass' ? 'stone' : material(i));
         label(u, v, 1.4, i + 1, i);
+        subLabel(u, v, i);
+      });
+    } else if (view === 'grid') {
+      const g = f.grid;
+      if (g && g.cells?.length) {
+        const rows = g.cells.length,
+          cols = Math.max(...g.cells.map(r => r.length));
+        const gapU = Math.min(1.7, 15 / cols),
+          gapV = Math.min(2.4, 15 / rows);
+        const key = (r, c) => `${r},${c}`;
+        const marked = new Set((g.marked || []).map(([r, c]) => key(r, c)));
+        const path = new Set((g.path || []).map(([r, c]) => key(r, c)));
+        for (let r = 0; r < rows; r++)
+          for (let c = 0; c < cols; c++) {
+            const u = (c - (cols - 1) / 2) * gapU,
+              v = (r - (rows - 1) / 2) * gapV;
+            const value = g.cells[r]?.[c];
+            const empty = value === null || value === undefined;
+            const isActive = g.active && g.active[0] === r && g.active[1] === c;
+            const t = isActive
+              ? 'gold'
+              : path.has(key(r, c))
+                ? 'diamond'
+                : marked.has(key(r, c))
+                  ? 'wood'
+                  : empty
+                    ? 'dark'
+                    : 'stone';
+            // Flat tiles keep the table readable; the active cell pops up as a block.
+            if (isActive) addUV(u, v, 0, t);
+            else addUV(u, v, -0.98, t, ground, false);
+            if (!empty) label(u, v, isActive ? 1.3 : 0.25, value, null, 'cell');
+          }
+        if (!thumbnail) {
+          (g.colLabels || []).forEach((text, c) =>
+            label(
+              (c - (cols - 1) / 2) * gapU,
+              -((rows - 1) / 2) * gapV - 1.4,
+              0.3,
+              text || 'ε',
+              null,
+              'index'
+            )
+          );
+          (g.rowLabels || []).forEach((text, r) =>
+            label(
+              -((cols - 1) / 2) * gapU - 1.6,
+              (r - (rows - 1) / 2) * gapV,
+              0.3,
+              text || 'ε',
+              null,
+              'index'
+            )
+          );
+        }
+      }
+    } else if (view === 'text') {
+      const rows = f.text?.rows || [{ label: 'TEXT', chars: a }];
+      const longest = Math.max(1, ...rows.map(r => (r.chars?.length || 0) + (r.offset || 0)));
+      const space = Math.min(1.6, 15 / longest);
+      rows.forEach((row, k) => {
+        const v = (k - (rows.length - 1) / 2) * 2.6;
+        (row.chars || []).forEach((ch, i) => {
+          const u = (i + (row.offset || 0) - (longest - 1) / 2) * space;
+          const t = material(i, row);
+          addUV(u, v, 0, t === 'grass' ? (k === 0 ? 'purple' : 'wood') : t);
+          label(u, v, 1.5, ch, k === 0 ? i : null);
+          if (!thumbnail && k === 0) label(u, v - 1.3, 0, i, null, 'index');
+        });
+        if (row.label && !thumbnail)
+          label(-((longest - 1) / 2) * space - 1.6, v, 0.4, row.label, null, 'index');
       });
     }
     const depth = o => (o.x + o.y) * Math.cos(this.angle) + (o.x - o.y) * Math.sin(this.angle);
@@ -613,15 +733,58 @@ export class VoxelWorld {
         to = uv(line.to[0], line.to[1]);
       const p = project(...from, line.from[2]),
         q = project(...to, line.to[2]);
+      const palette =
+        line.state === 'tree'
+          ? ['#b8ed80', '#e6ffc4']
+          : line.state === 'rejected'
+            ? ['#3f4a3c', '#55615150']
+            : line.active
+              ? ['#f6d985', '#ffecb4']
+              : view === 'list'
+                ? ['#ac6249', '#bdc39a']
+                : ['#687c53', '#bdc39a'];
       ctx.beginPath();
       ctx.moveTo(...p);
       ctx.lineTo(...q);
-      ctx.strokeStyle = line.active ? '#f6d985' : topic === 'list' ? '#ac6249' : '#687c53';
-      ctx.lineWidth = thumbnail ? 3 : 5;
+      ctx.strokeStyle = palette[0];
+      ctx.lineWidth = thumbnail ? 3 : line.state === 'tree' ? 6 : 5;
       ctx.stroke();
-      ctx.strokeStyle = line.active ? '#ffecb4' : '#bdc39a';
+      ctx.strokeStyle = palette[1];
       ctx.lineWidth = 1;
       ctx.stroke();
+      if (line.directed && !thumbnail) {
+        const dx = q[0] - p[0],
+          dy = q[1] - p[1],
+          len = Math.hypot(dx, dy) || 1,
+          ux = dx / len,
+          uy = dy / len,
+          tipX = p[0] + dx * 0.72,
+          tipY = p[1] + dy * 0.72,
+          size = 9;
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(tipX - ux * size - uy * size * 0.6, tipY - uy * size + ux * size * 0.6);
+        ctx.lineTo(tipX - ux * size + uy * size * 0.6, tipY - uy * size - ux * size * 0.6);
+        ctx.closePath();
+        ctx.fillStyle = palette[0];
+        ctx.fill();
+      }
+      if (line.weight !== undefined && !thumbnail) {
+        const mx = (p[0] + q[0]) / 2,
+          my = (p[1] + q[1]) / 2;
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = line.state === 'rejected' ? '#2a332a' : '#17291f';
+        ctx.fillRect(mx - 10, my - 8, 20, 16);
+        ctx.fillStyle =
+          line.state === 'rejected'
+            ? '#7b8a74'
+            : line.active || line.state === 'tree'
+              ? '#ffe3a0'
+              : '#dfe8cf';
+        ctx.fillText(line.weight, mx, my + 0.5);
+      }
     }
     objects.sort((a, b) => depth(a) - depth(b) || a.z - b.z).forEach(cube);
     for (const [u, v] of torches) {
@@ -648,20 +811,29 @@ export class VoxelWorld {
     }
     for (const l of labels) {
       const [x, y] = project(l.x, l.y, l.z),
-        isIndex = l.sub === 'index';
+        isIndex = l.sub === 'index',
+        isSub = l.sub === 'sub' || l.sub === 'cell';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.font = isIndex
         ? `${thumbnail ? 7 : 9}px monospace`
-        : `bold ${thumbnail ? 10 : Math.max(11, Math.min(15, scale * 0.5))}px monospace`;
-      const width = Math.max(20, ctx.measureText(String(l.text)).width + 12);
-      if (!isIndex) {
+        : isSub
+          ? 'bold 9px monospace'
+          : `bold ${thumbnail ? 10 : Math.max(11, Math.min(15, scale * 0.5))}px monospace`;
+      const text = String(l.text);
+      const width = Math.max(isSub ? 16 : 20, ctx.measureText(text).width + (isSub ? 8 : 12));
+      if (isSub) {
+        ctx.fillStyle = '#2b3a2ae6';
+        ctx.fillRect(Math.round(x - width / 2), Math.round(y - 7), width, 14);
+        ctx.fillStyle = '#cfe6b8';
+      } else if (!isIndex) {
         ctx.fillStyle = '#17291fdf';
         ctx.fillRect(Math.round(x - width / 2), Math.round(y - 10), width, 20);
         ctx.fillStyle = (f.active || []).includes(l.id) ? '#ffe3a0' : '#f1f7e2';
       } else ctx.fillStyle = '#f0f5dbe0';
-      ctx.fillText(l.text, x, y + 0.5);
-      if (l.id !== null) this.hits.push({ x, y, r: Math.max(14, width / 2), value: l.text, index: l.id });
+      ctx.fillText(text, x, y + 0.5);
+      if (l.id !== null && l.id !== undefined)
+        this.hits.push({ x, y, r: Math.max(14, width / 2), value: l.text, index: l.id });
     }
     if (this.transition) {
       if (performance.now() - this.transition.start < this.transition.duration)

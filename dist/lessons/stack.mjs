@@ -6,8 +6,10 @@ export default {
   name: 'Stack: push & pop',
   time: 'O(1) / operation',
   space: 'O(n)',
-  intro: 'Push supplies onto the top of a stack, then pop them off. The last block to enter is the first to leave.',
-  insight: 'LIFO means last in, first out. Stacks model undo history, expression evaluation, and the function call stack.',
+  intro:
+    'Push supplies onto the top of a stack, then pop them off. The last block to enter is the first to leave.',
+  insight:
+    'LIFO means last in, first out. Stacks model undo history, expression evaluation, and the function call stack.',
   code: [
     'for value in input',
     '  stack.push(value)',
@@ -48,7 +50,8 @@ export default {
       r.emit(`Push ${value}.`, 1, [r.a.length - 1]);
     }
     while (r.a.length) {
-      if (r.a.length > 1) r.frames.at(-1).ask = ask('choice', 'Which value leaves next?', r.a.length - 1, r.a.map(String));
+      if (r.a.length > 1)
+        r.frames.at(-1).ask = ask('choice', 'Which value leaves next?', r.a.length - 1, r.a.map(String));
       const value = r.a.pop();
       r.output.push(value);
       r.move();

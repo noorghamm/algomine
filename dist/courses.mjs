@@ -28,8 +28,8 @@ export const courses = [
         summary:
           'Insertion sort, merge sort, quicksort, heapsort, comparison lower bounds, counting sort and radix sort.',
         mission: 'Follow the split, explain the invariant, then compare best and worst cases.',
-        lessons: ['insertion', 'merge', 'quick'],
-        next: 'Heapsort, counting sort, radix sort and comparison lower-bound exercises',
+        lessons: ['insertion', 'merge', 'quick', 'heapsort', 'counting', 'radix'],
+        next: 'Comparison lower-bound exercises',
       },
       {
         name: 'Linked structures & ADTs',
@@ -38,8 +38,8 @@ export const courses = [
         summary:
           'Linked lists, abstract data types, stacks, queues and deques; compare array and linked implementations.',
         mission: 'Trace pointers and explain why stack and queue removal orders differ.',
-        lessons: ['traverse', 'stack', 'queue'],
-        next: 'List insertion/deletion, circular buffers, resizable arrays and deques',
+        lessons: ['traverse', 'listInsert', 'listDelete', 'stack', 'queue', 'brackets'],
+        next: 'Circular buffers, resizable arrays and deques',
       },
       {
         name: 'Trees & search',
@@ -48,8 +48,8 @@ export const courses = [
         summary:
           'Tree representations, height, traversal, binary search trees and operations on search trees.',
         mission: 'Follow branches and distinguish tree height from the number of nodes.',
-        lessons: ['bst', 'inorder'],
-        next: 'BST insertion/deletion and additional traversals',
+        lessons: ['bst', 'inorder', 'preorder', 'postorder', 'bstInsert', 'bstDelete'],
+        next: 'Level-order traversal and tree height exercises',
       },
       {
         name: 'Balanced search trees',
@@ -57,8 +57,8 @@ export const courses = [
         pages: 'ADS pp. 542–636',
         summary: 'Red-black trees, rotations, AVL comparisons and B-trees with multi-key nodes.',
         mission: 'Restore a structural invariant after inserting a key.',
-        lessons: [],
-        next: 'Rotation workshop, red-black insertion and B-tree splitting',
+        lessons: ['avl'],
+        next: 'Red-black insertion and B-tree splitting',
       },
       {
         name: 'Maps & hashing',
@@ -67,8 +67,8 @@ export const courses = [
         summary:
           'Map ADT, hash functions, chaining, load factor and open addressing with linear, quadratic and double-hash probing.',
         mission: 'Resolve collisions and explain why expected constant time needs assumptions.',
-        lessons: ['hash'],
-        next: 'Chaining, deletion tombstones and alternative probe strategies',
+        lessons: ['hash', 'chaining'],
+        next: 'Deletion tombstones and quadratic or double-hash probing',
       },
       {
         name: 'Probability in computing',
@@ -97,8 +97,8 @@ export const courses = [
         pages: 'Deck 1 pp. 34–170',
         summary: 'Comparison sorting recap, radix sorting, trie search/insertion and heap construction.',
         mission: 'Contrast digit-by-digit sorting with comparison sorting; follow a word through a trie.',
-        lessons: ['heap'],
-        next: 'Radix sorting and trie search/insertion',
+        lessons: ['heap', 'heapInsert', 'extractMax', 'heapsort', 'radix'],
+        next: 'Trie search and insertion',
       },
       {
         name: 'Text compression',
@@ -107,8 +107,8 @@ export const courses = [
         summary:
           'Huffman prefix codes and LZW dictionary-based compression/decompression, including the special decoding case.',
         mission: 'Build a coding tree or dictionary and decode your own message.',
-        lessons: [],
-        next: 'Huffman tree building, bit-cost comparison and LZW dictionary traces',
+        lessons: ['huffman'],
+        next: 'LZW dictionary traces',
       },
       {
         name: 'String distance & pattern search',
@@ -117,8 +117,8 @@ export const courses = [
         summary:
           'Edit distance with dynamic programming and traceback; brute-force matching, KMP border tables and Boyer–Moore shifts.',
         mission: 'Fill a distance table or predict which characters are compared after a mismatch.',
-        lessons: [],
-        next: 'Edit-distance grid, KMP border builder and pattern-search visualizers',
+        lessons: ['naive', 'kmp', 'editDistance'],
+        next: 'Boyer-Moore shifts',
       },
       {
         name: 'Graphs & routes',
@@ -127,8 +127,8 @@ export const courses = [
         summary:
           'Graph representations, BFS, DFS, shortest paths with Dijkstra, minimum spanning trees with Prim–Jarnik and its Dijkstra refinement, and topological ordering.',
         mission: 'Separate shortest paths from cheapest spanning networks; track the frontier at every step.',
-        lessons: ['bfs', 'dfs'],
-        next: 'Editable graphs, Dijkstra shortest paths, MST lessons and topological ordering',
+        lessons: ['bfs', 'dfs', 'dijkstra', 'prim', 'topo'],
+        next: 'Editable graphs and Kruskal',
       },
       {
         name: 'P, NP & reductions',

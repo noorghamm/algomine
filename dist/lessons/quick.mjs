@@ -30,13 +30,15 @@ export default {
         'The algorithm immediately returns',
       ],
       correct: 1,
-      reason: 'The largest block is always the pivot, leaving a subproblem only one block shorter at each level.',
+      reason:
+        'The largest block is always the pivot, leaving a subproblem only one block shorter at each level.',
     },
     {
       question: 'After partitioning, where is the pivot?',
       answers: ['In its final sorted position', 'At index 0', 'Still at the end'],
       correct: 0,
-      reason: 'Everything left of the pivot is at most the pivot and everything right is larger, so it never moves again.',
+      reason:
+        'Everything left of the pivot is at most the pivot and everything right is larger, so it never moves again.',
     },
     {
       question: 'Which pivot choice avoids the sorted-input worst case in practice?',
@@ -79,7 +81,12 @@ export default {
             depth,
           });
           boundary++;
-        } else r.emit(`${a[j]} is larger than the pivot. Leave it on the right.`, 3, [j], { pivot: hi, range: [lo, hi], depth });
+        } else
+          r.emit(`${a[j]} is larger than the pivot. Leave it on the right.`, 3, [j], {
+            pivot: hi,
+            range: [lo, hi],
+            depth,
+          });
       }
       const swapped = boundary !== hi;
       if (swapped) r.swap(boundary, hi);

@@ -23,7 +23,8 @@ export default {
       question: 'What order does in-order traversal produce for a BST?',
       answers: ['Descending order', 'Insertion order', 'Ascending order'],
       correct: 2,
-      reason: 'Left values are smaller and right values are larger, so left, node, right produces ascending order.',
+      reason:
+        'Left values are smaller and right values are larger, so left, node, right produces ascending order.',
     },
     {
       question: 'Which node is output first by an in-order traversal?',
@@ -47,12 +48,10 @@ export default {
       if (id === null) return;
       const n = nodes[id];
       r.emit(`Explore the left subtree of ${n.value}.`, 2, [id], {
-        ask: ask(
-          'choice',
-          `Left of ${n.value}: what happens next?`,
-          n.left === null ? 1 : 0,
-          [`Go down to ${n.left === null ? 'a child' : nodes[n.left].value}`, `Nothing there, so output ${n.value}`]
-        ),
+        ask: ask('choice', `Left of ${n.value}: what happens next?`, n.left === null ? 1 : 0, [
+          `Go down to ${n.left === null ? 'a child' : nodes[n.left].value}`,
+          `Nothing there, so output ${n.value}`,
+        ]),
       });
       visit(n.left);
       r.marked.push(id);

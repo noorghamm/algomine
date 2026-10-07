@@ -6,7 +6,8 @@ export default {
   name: 'Queue: enqueue & dequeue',
   time: 'O(1) / operation',
   space: 'O(n)',
-  intro: 'Add blocks at the rear and remove them from the front. The first block to enter is the first to leave.',
+  intro:
+    'Add blocks at the rear and remove them from the front. The first block to enter is the first to leave.',
   insight:
     'FIFO means first in, first out. The O(1) operation cost assumes a linked queue or circular buffer, not shifting an array.',
   code: [

@@ -20,16 +20,19 @@ export default {
   ],
   quiz: [
     {
-      question: 'After the first full pass of bubble sort, which value is guaranteed to be in its final position?',
+      question:
+        'After the first full pass of bubble sort, which value is guaranteed to be in its final position?',
       answers: ['The largest value', 'The smallest value', 'The middle value'],
       correct: 0,
-      reason: 'Each comparison pushes the larger neighbor right. The largest value reaches the last position.',
+      reason:
+        'Each comparison pushes the larger neighbor right. The largest value reaches the last position.',
     },
     {
       question: 'Bubble sort makes no swaps during a full pass. What can you conclude?',
       answers: ['The array is sorted', 'The array is reversed', 'Nothing yet'],
       correct: 0,
-      reason: 'If no neighbors are out of order, every neighbor pair is ordered, so the whole array is sorted.',
+      reason:
+        'If no neighbors are out of order, every neighbor pair is ordered, so the whole array is sorted.',
     },
     {
       question: 'How many passes does bubble sort need in the worst case for n blocks?',

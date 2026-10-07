@@ -59,4 +59,9 @@ export class Recorder {
 
 // Build an ask object for Mine Mode. The ask is attached to the frame whose
 // *next* frame reveals the answer.
-export const ask = (kind, prompt, answer, options) => ({ kind, prompt, answer, ...(options ? { options } : {}) });
+export const ask = (kind, prompt, answer, options) => ({
+  kind,
+  prompt,
+  answer,
+  ...(options ? { options } : {}),
+});

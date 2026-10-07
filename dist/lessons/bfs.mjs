@@ -7,7 +7,8 @@ export default {
   name: 'Breadth-first search',
   time: 'O(V + E)',
   space: 'O(V)',
-  intro: 'Explore the graph one layer at a time. A queue holds discovered nodes while you visit their neighbors.',
+  intro:
+    'Explore the graph one layer at a time. A queue holds discovered nodes while you visit their neighbors.',
   insight:
     'BFS finds shortest paths by edge count in an unweighted graph. This lesson starts at node 1 and checks neighbors in numeric order.',
   code: [
@@ -28,7 +29,11 @@ export default {
     },
     {
       question: 'What does BFS compute for free in an unweighted graph?',
-      answers: ['Shortest paths by edge count from the start', 'A minimum spanning tree', 'A topological order'],
+      answers: [
+        'Shortest paths by edge count from the start',
+        'A minimum spanning tree',
+        'A topological order',
+      ],
       correct: 0,
       reason: 'Nodes are reached in order of distance, so the first visit to a node uses the fewest edges.',
     },
@@ -36,7 +41,8 @@ export default {
       question: 'Why mark a node as discovered when it is enqueued rather than when it is visited?',
       answers: ['To avoid enqueuing the same node twice', 'To visit it sooner', 'It makes no difference'],
       correct: 0,
-      reason: 'Two neighbors might both see the node before it is dequeued; early marking keeps the queue clean.',
+      reason:
+        'Two neighbors might both see the node before it is dequeued; early marking keeps the queue clean.',
     },
   ],
   prepare(r) {

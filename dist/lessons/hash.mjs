@@ -6,7 +6,8 @@ export default {
   name: 'Hashing: linear probing',
   time: 'O(1) avg. / insert',
   space: 'O(m)',
-  intro: 'Map each value to value mod 11. If its chest is occupied, try the next chest until you find an empty slot.',
+  intro:
+    'Map each value to value mod 11. If its chest is occupied, try the next chest until you find an empty slot.',
   insight:
     'Linear probing resolves collisions. Each insertion is O(m) in the worst case; expected constant time needs a suitable hash and low load.',
   code: [
@@ -50,11 +51,18 @@ export default {
         while (a[s] !== null) s = (s + 1) % 11;
         return s;
       })();
-      r.frames.at(-1).ask = ask('index', `${value} mod 11 = ${slot}. Which chest will ${value} end up in?`, final);
+      r.frames.at(-1).ask = ask(
+        'index',
+        `${value} mod 11 = ${slot}. Which chest will ${value} end up in?`,
+        final
+      );
       r.emit(`${value} mod 11 = ${slot}. Try chest ${slot}.`, 1, [slot], { incoming: value });
       while (a[slot] !== null) {
         r.compare();
-        r.emit(`Collision: chest ${slot} contains ${a[slot]}.`, 2, [slot], { incoming: value, swapping: true });
+        r.emit(`Collision: chest ${slot} contains ${a[slot]}.`, 2, [slot], {
+          incoming: value,
+          swapping: true,
+        });
         slot = (slot + 1) % 11;
         r.emit(`Probe the next chest: ${slot}.`, 3, [slot], { incoming: value });
       }

@@ -3260,3 +3260,834 @@ footer {
     display: none;
   }
 }
+
+/* ---------- v3: header level bar, modes, Mine Mode, trays, arcade, settings, light theme ---------- */
+.header-right {
+  gap: 16px;
+}
+.streak-badge {
+  font: 10px var(--pixel);
+  color: #f0c060;
+  white-space: nowrap;
+}
+.level-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 150px;
+}
+.level-line {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #9fb68f;
+  white-space: nowrap;
+}
+.level-line b {
+  color: var(--lime);
+  font-weight: 700;
+}
+.level-bar {
+  height: 6px;
+  background: #121812;
+  border: 1px solid #3c4a36;
+}
+.level-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6aa84f, var(--lime));
+  transition: width 0.4s;
+}
+.icon-button.on {
+  color: var(--lime);
+  border-color: #6a8a4e;
+}
+.mode-toggle {
+  display: flex;
+  border: 1px solid #4b5b3e;
+  box-shadow: 0 3px #11190f;
+}
+.mode-toggle button {
+  background: #283124;
+  color: #a9b89c;
+  border: 0;
+  padding: 12px 15px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.mode-toggle button + button {
+  border-left: 1px solid #4b5b3e;
+}
+.mode-toggle button[aria-pressed='true'] {
+  background: #3b532c;
+  color: var(--lime);
+}
+.mine-badge {
+  font-size: 14px;
+  color: #ffd27a;
+  margin-left: auto;
+}
+.mine-badge + .lab-completed {
+  margin-left: 8px;
+}
+.mine-mode .scene {
+  border-color: #c9a24a;
+  box-shadow: 0 0 0 2px #c9a24a33;
+}
+.ask-panel {
+  border: 2px solid #c9a24a;
+  background: #2e3222;
+  padding: 14px 16px 12px;
+  margin-bottom: 14px;
+  box-shadow: 4px 4px #11180e;
+}
+.ask-panel.nudge {
+  animation: nudge 0.4s;
+}
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+.ask-panel .eyebrow {
+  color: #ffd27a;
+}
+.ask-prompt {
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 8px 0 10px;
+  color: #f3f7e8;
+}
+.ask-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ask-options .answer {
+  width: auto;
+  flex: 1 1 140px;
+  margin: 0;
+}
+.ask-help {
+  width: 100%;
+  margin: 0 0 4px;
+  font-size: 10px;
+  color: #b7c7a4;
+}
+.ask-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+}
+.ask-chips .value-chip,
+.state-tray button.value-chip,
+.aux-tray button.value-chip {
+  cursor: pointer;
+  border-color: #c9a24a;
+}
+.ask-chips .value-chip:hover,
+.state-tray button.value-chip:hover,
+.aux-tray button.value-chip:hover {
+  background: #5a5a2e;
+}
+.ask-feedback {
+  min-height: 18px;
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+.ask-feedback.good {
+  color: var(--lime);
+}
+.ask-feedback.bad {
+  color: #f0a08a;
+}
+.mine-hint {
+  font-size: 11px;
+  color: #b7c7a4;
+  margin: 0 0 12px;
+}
+.mine-score {
+  color: #ffd27a;
+  font-size: 9px;
+}
+.mine-mode #step {
+  border-color: #c9a24a;
+  color: #ffd27a;
+}
+#trays {
+  display: flex;
+  flex-direction: column;
+}
+.extra-tray > span {
+  min-width: 70px;
+}
+.extra-tray .value-chip {
+  min-width: 22px;
+  padding: 0 4px;
+}
+#toast.good {
+  border-color: var(--lime);
+}
+#toast.gold {
+  border-color: #ffd27a;
+  background: #4a3f1f;
+  color: #ffe9b0;
+}
+#toast.bad {
+  border-color: #e08a74;
+  background: #4a2a20;
+  color: #ffd8cc;
+}
+.lesson-portal.done {
+  border-color: var(--lime);
+}
+.journal-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 10px 0 18px;
+}
+.journal-summary div {
+  background: #1b241c;
+  border: 1px solid #415234;
+  padding: 10px;
+  text-align: center;
+}
+.journal-summary strong {
+  display: block;
+  font: 18px var(--pixel);
+  color: var(--lime);
+}
+.journal-summary span {
+  font-size: 9px;
+  color: #93a47f;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+#journalDialog h3 {
+  font-size: 13px;
+  margin: 18px 0 8px;
+  color: #cfe0bc;
+}
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.badge {
+  border: 1px solid #3a4733;
+  background: #1b241c;
+  padding: 10px;
+  opacity: 0.4;
+  display: grid;
+  gap: 4px;
+}
+.badge.earned {
+  opacity: 1;
+  border-color: #c9a24a;
+  background: #2b2d1d;
+}
+.badge span {
+  font-size: 18px;
+  color: #ffd27a;
+}
+.badge b {
+  font-size: 11px;
+}
+.badge small {
+  font-size: 9px;
+  color: #93a47f;
+  line-height: 1.4;
+}
+dialog#journalDialog,
+dialog#settingsDialog {
+  width: min(680px, calc(100% - 32px));
+}
+.setting-group {
+  border: 1px solid #415234;
+  padding: 12px 14px;
+  margin: 0 0 14px;
+}
+.setting-group legend {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #bdcfaa;
+  padding: 0 6px;
+}
+.setting-group label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #dbe6cf;
+  padding: 6px 0;
+}
+.setting-group input[type='radio'],
+.setting-group input[type='checkbox'] {
+  accent-color: var(--lime);
+  width: 16px;
+  height: 16px;
+}
+.setting-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.file-button {
+  cursor: pointer;
+  display: inline-flex;
+  padding: 12px 15px !important;
+}
+.secondary.danger {
+  border-color: #8a4a3a;
+  color: #f0a08a;
+}
+.setting-group p {
+  margin: 6px 0;
+}
+.setting-group kbd {
+  margin: 0 2px;
+}
+.arcade-strip .strip-icon {
+  color: #ffd27a;
+}
+#arcade {
+  padding: 24px 4% 50px;
+}
+.arcade-heading h1,
+.arcade-stage-top h1 {
+  font: 28px var(--pixel);
+  letter-spacing: -1px;
+  margin: 10px 0 8px;
+}
+.arcade-heading p,
+.arcade-stage-top p {
+  color: var(--muted);
+  margin: 0 0 24px;
+  line-height: 1.6;
+}
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.game-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  border: 1px solid #394633;
+  background: #20291f;
+  padding: 18px;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
+  position: relative;
+}
+.game-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--game-color);
+}
+.game-icon {
+  font-size: 30px;
+  color: var(--game-color);
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-content: center;
+  background: #16201a;
+  border: 1px solid #3a4a35;
+}
+.game-body h3 {
+  font: 14px var(--pixel);
+  margin: 4px 0 6px;
+}
+.game-body p {
+  font-size: 11px;
+  color: #a3b097;
+  margin: 0 0 8px;
+  line-height: 1.6;
+}
+.game-body small {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--game-color);
+  text-transform: uppercase;
+}
+.game-best {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font: 9px var(--pixel);
+  color: #ffd27a;
+}
+.arcade-stage-top {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.arcade-stage-top > div {
+  flex: 1;
+}
+.arcade-stage-top p {
+  margin: 0;
+}
+.arcade-game {
+  border: 1px solid #46593b;
+  background: #1b241c;
+  padding: 24px;
+  min-height: 420px;
+}
+.game-hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 18px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #93a47f;
+}
+.game-hud b {
+  display: block;
+  font: 18px var(--pixel);
+  color: #e8f0d8;
+  margin-top: 4px;
+}
+.game-hud .hud-timer b {
+  color: #ffd27a;
+}
+.game-hud .spacer {
+  flex: 1;
+}
+.game-board {
+  display: grid;
+  gap: 12px;
+}
+.game-intro,
+.game-over {
+  text-align: center;
+  padding: 40px 20px;
+}
+.game-intro h2,
+.game-over h2 {
+  font: 24px var(--pixel);
+  margin: 0 0 12px;
+}
+.game-intro p,
+.game-over p {
+  color: #a3b097;
+  max-width: 520px;
+  margin: 0 auto 20px;
+  line-height: 1.7;
+}
+.game-over .score {
+  font: 44px var(--pixel);
+  color: var(--lime);
+  margin: 10px 0;
+}
+.game-over .best {
+  color: #ffd27a;
+  font: 11px var(--pixel);
+  margin-bottom: 20px;
+}
+.game-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.game-prompt {
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 14px;
+}
+.game-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.game-options .answer {
+  margin: 0;
+}
+.code-puzzle {
+  display: grid;
+  gap: 8px;
+}
+.code-slot,
+.code-piece {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #192217;
+  border: 1px solid #3c4a36;
+  font: 11px/1.6 monospace;
+  color: #d0e0bc;
+  white-space: pre;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  min-height: 40px;
+}
+.code-slot b {
+  color: #4e6747;
+  min-width: 22px;
+}
+.code-slot.empty {
+  border-style: dashed;
+  color: #5e7455;
+}
+.code-slot.correct {
+  border-color: var(--lime);
+  background: #2b3d22;
+}
+.code-slot.wrong {
+  border-color: #e08a74;
+  background: #3d2a22;
+}
+.code-piece.selected {
+  border-color: #ffd27a;
+  background: #3a3a20;
+}
+.code-pieces {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+.code-gap {
+  display: inline-block;
+  min-width: 60px;
+  border-bottom: 2px solid #ffd27a;
+  color: #ffd27a;
+  text-align: center;
+}
+.game-canvas {
+  width: 100%;
+  height: 360px;
+  display: block;
+  border: 1px solid #506245;
+  background: #abcbd0;
+  cursor: pointer;
+}
+.timer-bar {
+  height: 8px;
+  background: #121812;
+  border: 1px solid #3c4a36;
+  margin-bottom: 16px;
+}
+.timer-fill {
+  height: 100%;
+  background: #ffd27a;
+  transition: width 0.2s linear;
+}
+.streak-pop {
+  font: 11px var(--pixel);
+  color: #ffd27a;
+}
+.chest-row {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 6px;
+}
+.chest-slot {
+  aspect-ratio: 1;
+  display: grid;
+  place-content: center;
+  background: #3a2d1b;
+  border: 2px solid #6b4f2d;
+  font: 13px var(--pixel);
+  color: #ffe3a0;
+  cursor: pointer;
+}
+.chest-slot small {
+  font-size: 8px;
+  color: #a78b5c;
+}
+.chest-slot.filled {
+  background: #5a4426;
+  cursor: default;
+}
+.chest-slot.hit {
+  border-color: var(--lime);
+}
+.chest-slot.miss {
+  border-color: #e08a74;
+}
+.queue-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.big-chip {
+  min-width: 46px;
+  height: 46px;
+  display: grid;
+  place-content: center;
+  font: 16px var(--pixel);
+  background: #303d27;
+  border: 1px solid #4b5d3c;
+  color: #e8f0d8;
+  cursor: pointer;
+}
+.big-chip:hover {
+  background: #3f5230;
+}
+.big-chip.active {
+  border-color: #ffd27a;
+  background: #5a4a20;
+}
+.big-chip.ghost {
+  opacity: 0.3;
+  cursor: default;
+}
+@media (max-width: 1150px) {
+  .level-wrap {
+    min-width: 120px;
+  }
+}
+@media (max-width: 900px) {
+  .level-wrap {
+    display: none;
+  }
+  .mode-toggle button {
+    padding: 10px 12px;
+    font-size: 10px;
+  }
+  .journal-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 650px) {
+  .streak-badge {
+    display: none;
+  }
+  .header nav #arcadeLink {
+    display: flex;
+    font-size: 0;
+  }
+  #arcadeLink:before {
+    content: '▦';
+    font-size: 19px;
+    color: #a7bc95;
+  }
+  .lab-heading .mode-toggle {
+    width: 100%;
+  }
+  .mode-toggle button {
+    flex: 1;
+  }
+  .arcade-game {
+    padding: 14px;
+  }
+  .chest-row {
+    gap: 3px;
+  }
+  .chest-slot {
+    font-size: 10px;
+  }
+  .arcade-stage-top {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+.reduce-motion *,
+.reduce-motion *:before,
+.reduce-motion *:after {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Light theme: the overworld at noon. */
+:root[data-theme='light'] {
+  --bg: #eef2e4;
+  --panel: #f7f9f0;
+  --border: #c7d1b8;
+  --muted: #5f7055;
+  --text: #1c2619;
+  --lime: #3f7d1f;
+  color-scheme: light;
+}
+:root[data-theme='light'] body {
+  background-image:
+    linear-gradient(#6a8a5010 1px, transparent 1px), linear-gradient(90deg, #6a8a5010 1px, transparent 1px);
+}
+:root[data-theme='light'] .header {
+  background: #f3f6ebf5;
+}
+:root[data-theme='light'] .brand small,
+:root[data-theme='light'] .nav-link,
+:root[data-theme='light'] .small-label,
+:root[data-theme='light'] .hero-bottom,
+:root[data-theme='light'] .card-body p,
+:root[data-theme='light'] .card-bottom,
+:root[data-theme='light'] .learning-strip p,
+:root[data-theme='light'] footer,
+:root[data-theme='light'] .legend,
+:root[data-theme='light'] .keyboard-hint,
+:root[data-theme='light'] .complexities span,
+:root[data-theme='light'] .insight p,
+:root[data-theme='light'] .stats span,
+:root[data-theme='light'] .code-heading,
+:root[data-theme='light'] .scene-toolbar,
+:root[data-theme='light'] .level-line,
+:root[data-theme='light'] .chapter-title small,
+:root[data-theme='light'] .chapter-content,
+:root[data-theme='light'] .course-heading p,
+:root[data-theme='light'] .course-note,
+:root[data-theme='light'] .game-body p,
+:root[data-theme='light'] .game-hud,
+:root[data-theme='light'] .game-intro p,
+:root[data-theme='light'] .game-over p,
+:root[data-theme='light'] .practice-heading p,
+:root[data-theme='light'] .guide-intro p,
+:root[data-theme='light'] dialog p,
+:root[data-theme='light'] .badge small,
+:root[data-theme='light'] .journal-summary span,
+:root[data-theme='light'] .ask-help,
+:root[data-theme='light'] .mine-hint {
+  color: #4f5f47;
+}
+:root[data-theme='light'] .hero,
+:root[data-theme='light'] .topic-card,
+:root[data-theme='light'] .learning-strip,
+:root[data-theme='light'] .inspector,
+:root[data-theme='light'] .playback,
+:root[data-theme='light'] .state-tray,
+:root[data-theme='light'] .aux-tray,
+:root[data-theme='light'] #courseMap,
+:root[data-theme='light'] .course-tabs button,
+:root[data-theme='light'] .game-card,
+:root[data-theme='light'] .arcade-game,
+:root[data-theme='light'] dialog,
+:root[data-theme='light'] .journal-summary div,
+:root[data-theme='light'] .badge,
+:root[data-theme='light'] .scene-toolbar,
+:root[data-theme='light'] .search-box,
+:root[data-theme='light'] .build-guide,
+:root[data-theme='light'] .build-workspace,
+:root[data-theme='light'] .build-sort-card,
+:root[data-theme='light'] .world-inventory,
+:root[data-theme='light'] .inventory-slot,
+:root[data-theme='light'] .ask-panel {
+  background: #f7f9f0;
+  color: var(--text);
+  border-color: #c7d1b8;
+}
+:root[data-theme='light'] .step-explanation {
+  background: #e4ecd6;
+  border-color: #c7d1b8;
+}
+:root[data-theme='light'] .step-explanation p,
+:root[data-theme='light'] .hero p,
+:root[data-theme='light'] .question p,
+:root[data-theme='light'] .ask-prompt {
+  color: #2b3a26;
+}
+:root[data-theme='light'] .inspector-tabs button,
+:root[data-theme='light'] .filters button,
+:root[data-theme='light'] .text-button,
+:root[data-theme='light'] .inspector-tabs button[aria-selected='true'] {
+  background: transparent;
+  color: #4f5f47;
+}
+:root[data-theme='light'] .inspector-tabs button[aria-selected='true'],
+:root[data-theme='light'] .filters button.active {
+  color: var(--lime);
+}
+:root[data-theme='light'] pre,
+:root[data-theme='light'] .code-slot,
+:root[data-theme='light'] .code-piece {
+  background: #e7edda;
+  color: #35452c;
+}
+:root[data-theme='light'] .code-line.highlight {
+  background: #cfe3b5;
+  color: #1c2619;
+}
+:root[data-theme='light'] .value-chip,
+:root[data-theme='light'] .big-chip,
+:root[data-theme='light'] .secondary,
+:root[data-theme='light'] select,
+:root[data-theme='light'] .icon-button,
+:root[data-theme='light'] .mode-toggle button,
+:root[data-theme='light'] .answer,
+:root[data-theme='light'] .presets button,
+:root[data-theme='light'] .material-slot,
+:root[data-theme='light'] .build-tool-group button,
+:root[data-theme='light'] .build-history button,
+:root[data-theme='light'] .scene-toolbar button,
+:root[data-theme='light'] .playback .icon-button {
+  background: #e4ecd6;
+  color: #2b3a26;
+  border-color: #b8c7a4;
+}
+:root[data-theme='light'] .mode-toggle button[aria-pressed='true'],
+:root[data-theme='light'] .answer.correct {
+  background: #cfe3b5;
+  color: #2b5c12;
+}
+:root[data-theme='light'] .value-chip.active {
+  background: #f3e1a8;
+  color: #5a3f00;
+  border-color: #c9a24a;
+}
+:root[data-theme='light'] .value-chip.marked {
+  background: #c8ebdd;
+  color: #145a44;
+}
+:root[data-theme='light'] dialog input,
+:root[data-theme='light'] .search-box input {
+  background: #fff;
+  color: #1c2619;
+  border-color: #b8c7a4;
+}
+:root[data-theme='light'] .primary {
+  color: #1c2f10;
+  background: #9edc5e;
+  border-color: #7bbf43;
+  box-shadow:
+    inset 0 2px #d7f7b4,
+    0 4px #4e7a2c;
+}
+:root[data-theme='light'] .stats strong,
+:root[data-theme='light'] .complexities b,
+:root[data-theme='light'] h2,
+:root[data-theme='light'] h3,
+:root[data-theme='light'] .lab-heading h1,
+:root[data-theme='light'] .arcade-heading h1,
+:root[data-theme='light'] .arcade-stage-top h1,
+:root[data-theme='light'] .game-hud b,
+:root[data-theme='light'] .journal-entry strong,
+:root[data-theme='light'] .chapter-title strong,
+:root[data-theme='light'] .build-guide h2,
+:root[data-theme='light'] .builder-heading h1 {
+  color: #1c2619;
+}
+:root[data-theme='light'] #toast {
+  background: #2b4a1c;
+}
+:root[data-theme='light'] dialog::backdrop {
+  background: #2b3a2688;
+}
+:root[data-theme='light'] .game-icon,
+:root[data-theme='light'] .chest-slot {
+  background: #e4ecd6;
+}
+:root[data-theme='light'] .chest-slot {
+  color: #5a3f00;
+  border-color: #c9a24a;
+}
+:root[data-theme='light'] .level-bar,
+:root[data-theme='light'] .timer-bar,
+:root[data-theme='light'] .experience-track {
+  background: #dfe7cf;
+}

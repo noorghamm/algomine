@@ -6,7 +6,8 @@ export default {
   name: 'Selection sort',
   time: 'O(n²)',
   space: 'O(1)',
-  intro: 'Scan the unsorted blocks for the smallest value. Move it to the front, then repeat for the remaining blocks.',
+  intro:
+    'Scan the unsorted blocks for the smallest value. Move it to the front, then repeat for the remaining blocks.',
   insight:
     'Selection sort performs at most n − 1 swaps, but still needs quadratic comparisons. The usual swapping version is not stable.',
   code: [
@@ -32,9 +33,14 @@ export default {
     },
     {
       question: 'Does a sorted input make selection sort faster?',
-      answers: ['No, it still scans every unsorted block', 'Yes, it becomes O(n)', 'Yes, it becomes O(log n)'],
+      answers: [
+        'No, it still scans every unsorted block',
+        'Yes, it becomes O(n)',
+        'Yes, it becomes O(log n)',
+      ],
       correct: 0,
-      reason: 'Selection sort cannot tell the input is sorted without scanning, so comparisons stay quadratic.',
+      reason:
+        'Selection sort cannot tell the input is sorted without scanning, so comparisons stay quadratic.',
     },
   ],
   run(r) {

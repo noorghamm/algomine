@@ -6,7 +6,8 @@ export default {
   name: 'Insertion sort',
   time: 'O(n²)',
   space: 'O(1)',
-  intro: 'Grow a sorted section from left to right. Move each new block left until it sits in the correct position.',
+  intro:
+    'Grow a sorted section from left to right. Move each new block left until it sits in the correct position.',
   insight:
     'This adjacent-swap version is stable and in-place. Nearly sorted inputs need much less work; the best case is O(n).',
   code: [
@@ -20,15 +21,24 @@ export default {
   quiz: [
     {
       question: 'When is insertion sort especially efficient?',
-      answers: ['When values are nearly sorted', 'When values are always reversed', 'Only when all values are unique'],
+      answers: [
+        'When values are nearly sorted',
+        'When values are always reversed',
+        'Only when all values are unique',
+      ],
       correct: 0,
       reason: 'Nearly sorted blocks require few leftward moves, approaching linear time.',
     },
     {
       question: 'What is true about the blocks to the left of i during insertion sort?',
-      answers: ['They are sorted among themselves', 'They are in final position', 'They are all smaller than a[i]'],
+      answers: [
+        'They are sorted among themselves',
+        'They are in final position',
+        'They are all smaller than a[i]',
+      ],
       correct: 0,
-      reason: 'The prefix is sorted, but later blocks can still be inserted into it, so positions are not final.',
+      reason:
+        'The prefix is sorted, but later blocks can still be inserted into it, so positions are not final.',
     },
     {
       question: 'Which input makes insertion sort do the most work?',
