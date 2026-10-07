@@ -4205,3 +4205,44 @@ dialog#settingsDialog {
   color: #ffe3a3;
   margin: 8px auto;
 }
+
+/* ---------- arcade games: hash-rush, bst-builder, path-race ---------- */
+.game-hash-rush .incoming,
+.game-bst-builder .incoming {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 12px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #93a47f;
+}
+.game-hash-rush .incoming b,
+.game-bst-builder .incoming b {
+  font: 32px var(--pixel);
+  color: #ffd27a;
+  min-width: 56px;
+}
+.game-hash-rush .chest-slot {
+  min-width: 0;
+  padding: 0;
+}
+.game-bst-builder .game-canvas,
+.game-path-race .game-canvas {
+  margin-bottom: 12px;
+}
+.game-bst-builder .queue-row small,
+.game-path-race .queue-row small {
+  align-self: center;
+  min-width: 70px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #93a47f;
+}
+.game-path-race .scene-hint {
+  min-height: 1.6em;
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #a3b097;
+}

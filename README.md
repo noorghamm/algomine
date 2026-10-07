@@ -1,102 +1,102 @@
 # AlgoMine
 
-A block-built playground for learning data structures and algorithms. Explore eight voxel biomes with sixteen lessons, editable inputs, step-by-step playback, pseudocode, and practice quests.
+A block-built playground for learning data structures and algorithms. Eleven voxel biomes, thirty-seven
+lessons, a Mine Mode where you make every decision yourself, an arcade of short DSA games, and a creative
+build mode. Everything runs in the browser with no build step and no runtime dependencies.
 
-**Live site:** https://blockcraft-algorithm-world.noorghammari.chatgpt.site (private; ChatGPT sign-in required).
+Live site: https://noorghamm.github.io/algomine/
 
-## Public hosting with GitHub Pages
+## Play
 
-The `Publish AlgoMine` workflow validates the application, uploads only `dist/`, and deploys to GitHub Pages on pushes to `main`. It can also be started manually from Actions. Repository Settings → Pages must use **GitHub Actions** as its publishing source.
+- **Watch**: step through any lesson with play, pause, previous, next, a timeline and playback speed. Edit the
+  input or pick a preset. Drag the world to orbit, scroll to zoom, switch between day and night.
+- **Mine Mode**: the lesson pauses at every decision the algorithm makes and asks you to make it: will these
+  two blocks swap, which chest does 17 land in, which node is visited next, go left or right. Click a block in
+  the world, a value chip, or an option. A flawless run earns extra XP.
+- **Practice quests**: three knowledge-check questions per lesson.
+- **The Arcade**: Pseudocode Forge (rebuild scrambled pseudocode and fill the gaps), Sort Detective, Complexity
+  Rush, Trace Trial, Hash Rush, BST Builder, Path Race and Stack Attack. High scores earn XP and sit in your journal.
+- **Progression**: XP, ten levels from Dirt Digger to Beacon Legend, achievements, a daily streak, and a
+  shareable progress card. Progress lives in this browser; export and import it from Settings.
+- **Build Mode**: a 9 × 9 plot per biome, eight materials, undo and redo, and Sort My Build, which feeds your
+  column heights into merge sort.
+- **Settings**: dark or light theme, reduced motion, block sounds, hints. The site installs as an offline app.
 
-Public address after a successful deployment: https://noorghamm.github.io/algomine/
+Keyboard: `Space` plays or pauses, `←` `→` step, `M` and `W` switch Mine and Watch, `/` focuses search,
+`?` opens the keyboard help. In Build Mode the arrows move the cursor, `Space` places, `X` mines, `1` to `8`
+pick a material and `⌘Z` undoes.
 
-Relative asset URLs and hash routes support the `/algomine/` project path. The existing private Sites deployment is separate. Browser-local progress and builds belong to each site's origin and are not transferred between hosts.
-
-## Run locally
-
-Requires Node.js 22 or later. There are no npm dependencies and no build step.
-
-```sh
-npm run dev
-```
-
-Open http://localhost:4173. To choose a different port:
-
-```sh
-PORT=8080 npm run dev
-```
-
-## Check the project
-
-```sh
-npm run check
-npm test
-```
-
-The test suite checks sorting results, search hits and misses, stack/queue ordering, tree and graph traversals, heap invariants, hash collisions, and pseudocode bounds. GitHub Actions runs these checks on pushes and pull requests.
-
-## Explore
+## Worlds and lessons
 
 | World | Lessons |
 | --- | --- |
-| Sorting Plains | Bubble, selection, insertion, merge sort and quicksort |
-| Search Quarry | Binary and linear search |
-| Redstone Railway | Linked-list traversal |
-| Storage Stronghold | Stack push/pop and queue enqueue/dequeue |
-| Binary Forest | BST search and in-order traversal |
-| Pathfinder Valley | Breadth-first and depth-first search |
-| Diamond Peak | Bottom-up max-heap construction |
-| Chest Archives | Hashing with linear probing |
+| Sorting Plains | Bubble, selection, insertion, merge, quicksort, heapsort, counting sort, radix sort |
+| Search Quarry | Linear and binary search |
+| Redstone Railway | Linked-list traversal, insertion, deletion |
+| Storage Stronghold | Stack, queue, balanced brackets |
+| Binary Forest | BST search, in-order, pre-order, post-order, BST insert, BST delete |
+| Canopy Citadel | AVL insertion with rotations |
+| Pathfinder Valley | BFS, DFS, Dijkstra, Prim's MST, topological sort |
+| Diamond Peak | Build a max heap, heap insert, extract max |
+| Chest Archives | Linear probing, separate chaining |
+| Rune Library | Brute-force matching, KMP, edit distance |
+| Compression Forge | Huffman coding |
 
-Use play/pause, previous/next step, the timeline, and playback speed controls. Edit values or choose input presets. Drag the world to orbit, scroll to zoom, and switch between day and night. Practice quests and completed lessons earn XP, saved in the current browser's local storage.
+The course map groups these into the chapters of Algorithms & Data Structures 2 and Algorithmics I with
+PDF page references. The source slide decks are not part of this repository.
 
-**Keyboard:** Space plays/pauses, arrow keys step, and `/` focuses catalogue search. Keyboard playback shortcuts are inactive when an input or button has focus.
+## Run locally
 
-## Block-world interface
+Requires Node.js 22 or later. There are no runtime dependencies and no build step.
 
-Original pixel-art item icons form a clickable eight-slot world hotbar. Wood, stone and dirt textures frame the interface; lessons use a parchment crafting book and inventory-style playback controls. The experience bar reflects explored lessons. Voxel terrain includes grass edges, exposed stone and ore, block trees and torches that glow in night mode. All textures and item sprites are project-authored SVGs in `dist/assets/`.
+```bash
+npm run dev
+```
 
-## Creative build mode
+Open http://localhost:4173. `PORT=8080 npm run dev` picks a different port.
 
-Open **Build** in the header, **Build Your World** on the home screen, or **Build Mode** inside a lesson. Each biome has its own browser-local 9 × 9 plot, with up to 256 placed blocks and six levels of height. Choose from eight materials, click/tap a top face to stack, or a visible side face to attach a block. Mine removes placed blocks; the island base is protected. Floating structures are allowed.
+```bash
+npm run check   # syntax-check every script
+npm test        # run every test under tests/
+npm run lint    # prettier --check (needs `npm install` once for the dev dependency)
+npm run format  # prettier --write
+```
 
-Undo/redo keeps the last 50 edits in the current session. Clearing a plot is undoable. Builds autosave in this browser and survive refresh; history and material selection do not persist across refresh. A storage failure is reported in the builder. Builds do not sync across devices.
-
-For keyboard use, focus the plot: arrows move the ground-column cursor, Space/Enter uses the selected tool, X mines the top block, 1–8 selects a material, and Ctrl/Command-Z undoes (Shift to redo). X/Y selectors and an action button provide an alternative to canvas interaction. Dragging orbits and scrolling zooms.
-
-**Sort my build** uses the heights of 3–10 occupied columns as merge-sort input, ordered by Y then X. Height is the highest occupied level plus one, including gaps beneath floating blocks. The source build is preserved. Creative builds use dedicated plots and do not modify lesson data unless this action is chosen.
-
-## Course paths
-
-The course map follows **Algorithms & Data Structures 2** and **Algorithmics I** from the supplied lecture decks. It groups the syllabus into 13 chapters, links implemented lessons, and explicitly marks remaining topics as roadmap coverage. References use one-based PDF page numbers. The second Algorithmics deck contains revision material, not a third course.
-
-Merge sort shows the pending merge buffer, active range and recursion depth. Quicksort uses last-pivot Lomuto partitioning, matching the ADS partitioning example. Its worst-case time and stack costs are shown explicitly. Course links support direct routes such as `#world/sorting/merge`.
-
-Only original summaries and implementations are included. The source PDFs and extracted slide text are not distributed in this repository. Mapped syllabus coverage is not a claim that all course lessons or exam preparation are implemented.
+GitHub Actions runs the checks on every push and pull request, and the Publish workflow deploys `dist/`
+to GitHub Pages on pushes to main.
 
 ## Source layout
 
-- `dist/index.html`: catalogue, lesson workbench, and dialogs
-- `dist/style.css`: responsive layout and block-inspired styling
-- `dist/algorithms.mjs`: lesson definitions and pure simulation functions
-- `dist/builder.mjs`: builder controls, per-biome local saving and sorting handoff
-- `dist/build-state.mjs`: placement validation, face picking helpers and undoable build state
-- `tests/build-state.test.mjs`: building rules, history, storage round trips and height extraction
-- `dist/courses.mjs`: original course map, PDF page references and playable lesson links
-- `dist/world.mjs`: canvas voxel renderer, camera, and swap animations
-- `dist/app.js`: navigation, playback, input validation, practice, and local progress
-- `tests/algorithms.test.mjs`: algorithm verification
-- `scripts/serve.mjs`: dependency-free local development server
-- `.openai/hosting.json`: existing private Sites deployment identity
+```
+dist/
+  index.html          page shell: home, lesson workbench, build mode, arcade, dialogs
+  style.css           layout, block-world chrome, light theme
+  app.js              bootstrap, routing, home screen, course map, journal
+  lab.mjs             lesson workbench: playback, Mine Mode, practice quests, data editor
+  world.mjs           canvas voxel renderer and the named views (bars, array, list, hash, stack, tree, forest, graph, grid, text)
+  algorithms.mjs      topics (worlds) and re-exports of the lesson registry
+  lessons/            one module per lesson plus recorder.mjs, shared.mjs and index.mjs (the manifest)
+  arcade/             the arcade hub, shared game helpers and one module per game
+  progress.mjs        XP, levels, achievements, streaks, settings, export and import
+  settings.mjs        settings dialog and theme
+  share.mjs           progress card renderer
+  sound.mjs           Web Audio block sounds
+  builder.mjs, build-state.mjs   creative build mode
+  courses.mjs         course map
+  sw.js, manifest.webmanifest    offline support
+tests/                node:test suites: algorithms, build state, every lesson, per-topic lesson checks, arcade helpers
+docs/                 lesson-contract.md and game-contract.md
+```
 
-`dist/` contains the editable source and deployable static files; it is intentionally tracked. Any static host supporting JavaScript modules can serve it. Hash-based routes do not need server rewrites. Google Fonts is the only runtime external asset dependency; fallback fonts are provided.
+## Adding a lesson
+
+Read `docs/lesson-contract.md`, create `dist/lessons/<id>.mjs`, add the id to the manifest in
+`dist/lessons/index.mjs` and to a topic's `algorithms` list in `dist/algorithms.mjs`, then run `npm test`.
+The generic lesson test checks frames, pseudocode line bounds, asks, quiz shape and your `check()` on a set of
+generated inputs. Add a game the same way with `docs/game-contract.md`.
 
 ## Scope
 
-This is an independent educational project with original voxel graphics. It is not affiliated with Minecraft, Mojang, Microsoft, or VisuAlgo. The topic-library and visualization approach was inspired by https://visualgo.net/en; its code and assets are not used.
-
-The graph lesson uses a fixed seven-node undirected map. Tree lessons omit duplicate values. Binary search sorts its input automatically. Progress is browser-local and does not sync between devices. Complexity labels describe the demonstrated algorithms, not the visualization's stored animation frames.
-
-## Contributing
-
-Keep simulation logic in `dist/algorithms.mjs` and visual presentation in `dist/world.mjs`. Add meaningful algorithm checks when introducing a new lesson. Run both check commands and inspect the affected lesson in a browser at desktop and mobile widths before opening a pull request.
+This is an independent educational project with original voxel graphics. It is not affiliated with Minecraft,
+Mojang, Microsoft, or VisuAlgo. The visualization approach was inspired by https://visualgo.net/en; its code
+and assets are not used. Progress is browser-local and does not sync between devices unless you export it.
