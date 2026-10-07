@@ -149,3 +149,63 @@ for (const values of cases) {
 }
 
 console.log(`${checked} sorting lesson checks passed.`);
+
+// Property checks over random inputs for every lesson in the sorting topic.
+{
+  const { topics } = await import('../../dist/algorithms.mjs');
+  const sortingLessons = topics.find(t => t.id === 'sorting').algorithms;
+  const seed = Number(process.env.SORT_SEED || 20261007);
+  let state = seed >>> 0;
+  const rng = () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const randomInput = () => {
+    const n = Math.floor(rng() * 41); // 0 to 40
+    const spread = rng() < 0.3 ? 4 : 20; // a narrow range forces duplicates
+    return Array.from({ length: n }, () => 1 + Math.floor(rng() * spread));
+  };
+  const inputs = [];
+  for (let i = 0; i < 50; i++) inputs.push(randomInput());
+  const base = Array.from({ length: 25 }, () => 1 + Math.floor(rng() * 20));
+  inputs.push([], [7], sorted(base), sorted(base).reverse(), Array(12).fill(9));
+  const multiset = values => JSON.stringify(sorted(values));
+  const isSorted = values => values.every((v, i) => i === 0 || values[i - 1] <= v);
+  const swapDistance = (a, b) => {
+    if (a.length !== b.length) return Infinity;
+    const diff = [];
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) diff.push(i);
+    if (diff.length === 0) return 0;
+    if (diff.length === 2 && a[diff[0]] === b[diff[1]] && a[diff[1]] === b[diff[0]]) return 1;
+    return Infinity;
+  };
+
+  let runs = 0;
+  for (const id of sortingLessons) {
+    for (const input of inputs) {
+      const label = `${id} on ${JSON.stringify(input)} (seed ${seed})`;
+      const frames = simulate(id, input);
+      const last = frames.at(-1).values;
+      assert.ok(isSorted(last), `${label}: final values are not sorted: ${JSON.stringify(last)}`);
+      assert.equal(
+        multiset(last),
+        multiset(input),
+        `${label}: final values are not a permutation of the input`
+      );
+      const swaps = frames.some(f => f.swapping);
+      if (swaps)
+        for (let i = 1; i < frames.length; i++)
+          assert.ok(
+            swapDistance(frames[i - 1].values, frames[i].values) <= 1,
+            `${label}: frames ${i - 1} and ${i} differ by more than one swap: ${JSON.stringify(frames[i - 1].values)} -> ${JSON.stringify(frames[i].values)}`
+          );
+      runs++;
+    }
+  }
+  console.log(
+    `${runs} random-input property runs passed across ${sortingLessons.length} sorting lessons (seed ${seed}).`
+  );
+}
