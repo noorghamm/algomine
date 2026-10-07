@@ -9,8 +9,8 @@ export const topics = [
     terrain: 'grass',
     level: 'Start here',
     description: 'Bring order to the overworld, one block at a time.',
-    tags: ['array', 'bubble', 'selection', 'insertion', 'merge', 'quick', 'quicksort', 'divide and conquer'],
-    algorithms: ['bubble', 'selection', 'insertion', 'merge', 'quick'],
+    tags: ['array', 'bubble', 'selection', 'insertion', 'merge', 'quick', 'quicksort', 'divide and conquer', 'heapsort', 'counting', 'radix'],
+    algorithms: ['bubble', 'selection', 'insertion', 'merge', 'quick', 'heapsort', 'counting', 'radix'],
     values: [7, 3, 9, 4, 6, 2, 8, 5],
     view: 'bars',
   },
@@ -25,7 +25,7 @@ export const topics = [
     level: 'Beginner',
     description: 'Dig smarter. Find your target in a mountain of data.',
     tags: ['binary', 'linear', 'array'],
-    algorithms: ['binary', 'linear'],
+    algorithms: ['linear', 'binary'],
     values: [2, 4, 6, 8, 10, 12, 14, 16],
     view: 'array',
   },
@@ -40,7 +40,7 @@ export const topics = [
     level: 'Beginner',
     description: 'Follow the pointers that keep every block connected.',
     tags: ['list', 'pointer', 'traversal'],
-    algorithms: ['traverse'],
+    algorithms: ['traverse', 'listInsert', 'listDelete'],
     values: [4, 8, 3, 7, 2],
     view: 'list',
   },
@@ -55,7 +55,7 @@ export const topics = [
     level: 'Beginner',
     description: 'Stack your supplies. Discover who gets out first.',
     tags: ['stack', 'queue', 'lifo', 'fifo'],
-    algorithms: ['stack', 'queue'],
+    algorithms: ['stack', 'queue', 'brackets'],
     values: [4, 7, 2, 9, 5],
     view: 'stack',
   },
@@ -69,8 +69,8 @@ export const topics = [
     terrain: 'forest',
     level: 'Intermediate',
     description: 'Take the left or right path through a forest of nodes.',
-    tags: ['bst', 'tree', 'inorder', 'search'],
-    algorithms: ['bst', 'inorder'],
+    tags: ['bst', 'tree', 'inorder', 'preorder', 'postorder', 'search', 'insert', 'delete'],
+    algorithms: ['bst', 'inorder', 'preorder', 'postorder', 'bstInsert', 'bstDelete'],
     values: [8, 4, 12, 2, 6, 10, 14],
     view: 'tree',
   },
@@ -84,8 +84,8 @@ export const topics = [
     terrain: 'water',
     level: 'Intermediate',
     description: 'Light up the paths. Explore every corner of the map.',
-    tags: ['bfs', 'dfs', 'graph', 'breadth', 'depth'],
-    algorithms: ['bfs', 'dfs'],
+    tags: ['bfs', 'dfs', 'graph', 'breadth', 'depth', 'dijkstra', 'prim', 'shortest path', 'spanning tree', 'topological'],
+    algorithms: ['bfs', 'dfs', 'dijkstra', 'prim', 'topo'],
     values: [1, 2, 3, 4, 5, 6, 7],
     view: 'graph',
   },
@@ -100,7 +100,7 @@ export const topics = [
     level: 'Intermediate',
     description: 'Build a max heap and lift the biggest value to the top.',
     tags: ['heap', 'priority', 'heapify'],
-    algorithms: ['heap'],
+    algorithms: ['heap', 'heapInsert', 'extractMax'],
     values: [4, 10, 3, 5, 1, 8, 6],
     view: 'tree',
   },
@@ -114,807 +114,60 @@ export const topics = [
     terrain: 'purple',
     level: 'Intermediate',
     description: 'Give every item an address. Handle the collisions.',
-    tags: ['hash', 'modulo', 'linear probing'],
-    algorithms: ['hash'],
+    tags: ['hash', 'modulo', 'linear probing', 'chaining'],
+    algorithms: ['hash', 'chaining'],
     values: [10, 3, 17, 8, 12],
     view: 'hash',
   },
+  {
+    id: 'balanced',
+    name: 'Canopy Citadel',
+    subject: 'Balanced Trees',
+    category: 'Data structures',
+    icon: '♣',
+    color: '#7fd6a8',
+    terrain: 'canopy',
+    level: 'Advanced',
+    description: 'Keep the forest short. Rotate branches so no path grows too long.',
+    tags: ['avl', 'rotation', 'balanced', 'height', 'tree'],
+    algorithms: ['avl'],
+    values: [10, 20, 30, 25, 28, 5],
+    view: 'tree',
+  },
+  {
+    id: 'strings',
+    name: 'Rune Library',
+    subject: 'Strings & Text',
+    category: 'Algorithms',
+    icon: '✎',
+    color: '#e0b6ff',
+    terrain: 'rune',
+    level: 'Advanced',
+    description: 'Read the runes. Match patterns and measure how far apart two words are.',
+    tags: ['string', 'pattern', 'kmp', 'edit distance', 'dynamic programming', 'text'],
+    algorithms: ['naive', 'kmp', 'editDistance'],
+    values: [],
+    view: 'text',
+  },
+  {
+    id: 'compress',
+    name: 'Compression Forge',
+    subject: 'Compression',
+    category: 'Algorithms',
+    icon: '⚒',
+    color: '#f3a86b',
+    terrain: 'forge',
+    level: 'Advanced',
+    description: 'Melt a message down to its shortest bits with a Huffman tree.',
+    tags: ['huffman', 'compression', 'prefix code', 'greedy', 'tree'],
+    algorithms: ['huffman'],
+    values: [],
+    view: 'forest',
+  },
 ];
-export const definitions = {
-  bubble: {
-    name: 'Bubble sort',
-    time: 'O(n²)',
-    space: 'O(1)',
-    intro:
-      'Compare neighboring blocks. Swap them when the left value is larger. After each pass, the largest remaining value is in its final position.',
-    insight:
-      'An in-place, stable sort. These swaps are easy to follow, but repeated passes make it slow for large inputs.',
-    code: [
-      'for end = n − 1 down to 1',
-      '  for i = 0 to end − 1',
-      '    compare a[i] and a[i + 1]',
-      '    if a[i] > a[i + 1]',
-      '      swap(a[i], a[i + 1])',
-      'return a',
-    ],
-    question:
-      'After the first full pass of bubble sort, which value is guaranteed to be in its final position?',
-    answers: ['The largest value', 'The smallest value', 'The middle value'],
-    correct: 0,
-    reason: 'Each comparison pushes the larger neighbor right. The largest value reaches the last position.',
-  },
-  selection: {
-    name: 'Selection sort',
-    time: 'O(n²)',
-    space: 'O(1)',
-    intro:
-      'Scan the unsorted blocks for the smallest value. Move it to the front, then repeat for the remaining blocks.',
-    insight:
-      'Selection sort performs at most n − 1 swaps, but still needs quadratic comparisons. The usual swapping version is not stable.',
-    code: [
-      'for i = 0 to n − 2',
-      '  smallest = i',
-      '  for j = i + 1 to n − 1',
-      '    if a[j] < a[smallest]: smallest = j',
-      '  swap(a[i], a[smallest])',
-      'return a',
-    ],
-    question: 'What does selection sort find during each pass?',
-    answers: ['The largest neighboring pair', 'The smallest remaining value', 'A random pivot'],
-    correct: 1,
-    reason: 'Each pass selects the smallest value in the unsorted portion.',
-  },
-  insertion: {
-    name: 'Insertion sort',
-    time: 'O(n²)',
-    space: 'O(1)',
-    intro:
-      'Grow a sorted section from left to right. Move each new block left until it sits in the correct position.',
-    insight:
-      'This adjacent-swap version is stable and in-place. Nearly sorted inputs need much less work; the best case is O(n).',
-    code: [
-      'for i = 1 to n − 1',
-      '  j = i',
-      '  while j > 0',
-      '    compare a[j − 1] and a[j]',
-      '    if a[j − 1] <= a[j]: break',
-      '    swap(a[j − 1], a[j]); j −= 1',
-    ],
-    question: 'When is insertion sort especially efficient?',
-    answers: [
-      'When values are nearly sorted',
-      'When values are always reversed',
-      'Only when all values are unique',
-    ],
-    correct: 0,
-    reason: 'Nearly sorted blocks require few leftward moves, approaching linear time.',
-  },
-  merge: {
-    name: 'Merge sort',
-    time: 'Θ(n log n)',
-    space: 'O(n)',
-    intro:
-      'Split the block row into halves until each section has one block. Merge neighboring sorted sections by repeatedly taking the smaller front block.',
-    insight:
-      'The merge buffer is extra working memory. Taking the left block on ties makes this version stable. Each level does linear work across O(log n) levels: T(n) = 2T(n/2) + Θ(n).',
-    code: [
-      'mergeSort(lo, hi):',
-      '  if lo >= hi: return',
-      '  mid = floor((lo + hi) / 2)',
-      '  mergeSort(lo, mid); mergeSort(mid + 1, hi)',
-      '  copy both sorted halves into a buffer',
-      '  compare the front blocks; take left on ties',
-      '  write the smaller block; drain any remaining half',
-      'return sorted array',
-    ],
-    question: 'Why does this merge sort choose the left block when two keys are equal?',
-    answers: [
-      'To avoid allocating memory',
-      'To preserve their original relative order',
-      'To reduce the recursion depth',
-    ],
-    correct: 1,
-    reason: 'Taking equal keys from the left half first preserves stability across the merge.',
-  },
-  quick: {
-    name: 'Quicksort',
-    time: 'O(n²) worst',
-    space: 'O(n) worst stack',
-    intro:
-      'Choose the last block as a pivot. Move values at most the pivot to the left, place the pivot between the partitions, then sort each side recursively.',
-    insight:
-      'This is last-pivot Lomuto partitioning, as in the ADS example. Average time is O(n log n) over random permutations of distinct keys. Sorted or all-equal inputs cause O(n²) time and O(n) stack depth. It is not stable.',
-    code: [
-      'quickSort(lo, hi):',
-      '  if lo >= hi: return',
-      '  pivot = a[hi]; boundary = lo',
-      '  for j = lo to hi − 1: compare a[j] with pivot',
-      '    if a[j] <= pivot: swap(a[j], a[boundary]); boundary++',
-      '  swap(a[boundary], a[hi]); pivot is now fixed',
-      '  quickSort(lo, boundary − 1)',
-      '  quickSort(boundary + 1, hi)',
-      'return sorted array',
-    ],
-    question: 'Using the last block as pivot, what happens on an already sorted array?',
-    answers: [
-      'Each split is balanced',
-      'Each pivot splits off just one block, giving quadratic time',
-      'The algorithm immediately returns',
-    ],
-    correct: 1,
-    reason:
-      'The largest block is always the pivot, leaving a subproblem only one block shorter at each level.',
-  },
-  binary: {
-    name: 'Binary search',
-    time: 'O(log n)',
-    space: 'O(1)',
-    target: true,
-    intro:
-      'Search sorted blocks by inspecting the middle value. Eliminate the half that cannot contain your target, then repeat.',
-    insight:
-      'Binary search requires sorted data. Each comparison roughly halves the remaining search area. Index labels start at zero.',
-    code: [
-      'left = 0; right = n − 1',
-      'while left <= right',
-      '  mid = floor((left + right) / 2)',
-      '  if a[mid] == target: return mid',
-      '  if a[mid] < target: left = mid + 1',
-      '  else: right = mid − 1',
-      'return not found',
-    ],
-    question: 'What must be true before binary search can work correctly?',
-    answers: ['The values must be unique', 'The values must be sorted', 'The length must be even'],
-    correct: 1,
-    reason: 'Sorted order is what makes it safe to discard half the remaining values.',
-  },
-  linear: {
-    name: 'Linear search',
-    time: 'O(n)',
-    space: 'O(1)',
-    target: true,
-    intro:
-      'Inspect each block from left to right. Stop at the first matching value, or after the final block.',
-    insight:
-      'Linear search works with unsorted data. It can stop after one comparison, but its worst case checks every value.',
-    code: ['for i = 0 to n − 1', '  inspect a[i]', '  if a[i] == target: return i', 'return not found'],
-    question: 'In the worst case, how many items does linear search inspect in an array of n items?',
-    answers: ['log₂ n', '1', 'n'],
-    correct: 2,
-    reason: 'If the target is absent or appears only at the end, every item must be checked.',
-  },
-  traverse: {
-    name: 'Traverse a linked list',
-    time: 'O(n)',
-    space: 'O(1)',
-    intro:
-      'Begin at the head and follow each next pointer. The redstone connections show how nodes link together in memory.',
-    insight:
-      'Unlike an array, a linked list does not offer constant-time indexed access. To reach a node, follow the preceding links.',
-    code: [
-      'current = head',
-      'while current != null',
-      '  visit(current.value)',
-      '  current = current.next',
-      'return visited values',
-    ],
-    question: 'How do you reach the fourth node of a singly linked list?',
-    answers: [
-      'Follow next pointers from the head',
-      'Jump directly to index 3',
-      'Follow the tail pointer backward',
-    ],
-    correct: 0,
-    reason: 'A singly linked list exposes a next pointer at each node, so traversal starts at the head.',
-  },
-  stack: {
-    name: 'Stack: push & pop',
-    time: 'O(1) / operation',
-    space: 'O(n)',
-    intro:
-      'Push supplies onto the top of a stack, then pop them off. The last block to enter is the first to leave.',
-    insight:
-      'LIFO means last in, first out. Stacks model undo history, expression evaluation, and the function call stack.',
-    code: [
-      'for value in input',
-      '  stack.push(value)',
-      'while stack is not empty',
-      '  value = stack.pop()',
-      '  append value to output',
-      'return output',
-    ],
-    question: 'Push 4, then 7, then 2. Which value is popped first?',
-    answers: ['4', '7', '2'],
-    correct: 2,
-    reason: 'The most recently pushed value is on top: 2 comes out first.',
-  },
-  queue: {
-    name: 'Queue: enqueue & dequeue',
-    time: 'O(1) / operation',
-    space: 'O(n)',
-    intro:
-      'Add blocks at the rear and remove them from the front. The first block to enter is the first to leave.',
-    insight:
-      'FIFO means first in, first out. The O(1) operation cost assumes a linked queue or circular buffer, not shifting an array.',
-    code: [
-      'for value in input',
-      '  queue.enqueue(value)',
-      'while queue is not empty',
-      '  value = queue.dequeue()',
-      '  append value to output',
-      'return output',
-    ],
-    question: 'Enqueue 4, then 7, then 2. Which value is dequeued first?',
-    answers: ['4', '7', '2'],
-    correct: 0,
-    reason: 'A queue preserves arrival order: the earliest value, 4, leaves first.',
-  },
-  bst: {
-    name: 'Search a BST',
-    time: 'O(h)',
-    space: 'O(1)',
-    target: true,
-    intro:
-      'Compare your target with the current node. Follow the left branch for a smaller value or the right branch for a larger one.',
-    insight:
-      'h is the tree height. A balanced BST has O(log n) height; a skewed BST can have O(n) height. Duplicate input values are omitted.',
-    code: [
-      'node = root',
-      'while node != null',
-      '  compare target and node.value',
-      '  if target == node.value: return node',
-      '  if target < node.value: node = node.left',
-      '  else: node = node.right',
-      'return not found',
-    ],
-    question: 'At a node with value 8, where should you look for 6?',
-    answers: ['In the right subtree', 'In the left subtree', 'At the parent'],
-    correct: 1,
-    reason: 'A BST stores smaller values in the left subtree and larger values in the right.',
-  },
-  inorder: {
-    name: 'In-order traversal',
-    time: 'O(n)',
-    space: 'O(h)',
-    intro:
-      'Visit the left subtree, then the node, then the right subtree. A binary search tree reveals its values in ascending order.',
-    insight: 'The traversal visits each node once. Its recursive call stack can grow to the tree height h.',
-    code: [
-      'inorder(node):',
-      '  if node == null: return',
-      '  inorder(node.left)',
-      '  output.append(node.value)',
-      '  inorder(node.right)',
-      'return output',
-    ],
-    question: 'What order does in-order traversal produce for a BST?',
-    answers: ['Descending order', 'Insertion order', 'Ascending order'],
-    correct: 2,
-    reason:
-      'Left values are smaller and right values are larger, so left–node–right produces ascending order.',
-  },
-  bfs: {
-    name: 'Breadth-first search',
-    time: 'O(V + E)',
-    space: 'O(V)',
-    intro:
-      'Explore the graph one layer at a time. A queue holds discovered nodes while you visit their neighbors.',
-    insight:
-      'BFS finds shortest paths by edge count in an unweighted graph. This lesson starts at node 1 and checks neighbors in numeric order.',
-    code: [
-      'queue = [start]; discovered = {start}',
-      'while queue is not empty',
-      '  node = queue.dequeue(); visit(node)',
-      '  for neighbor in neighbors(node)',
-      '    if neighbor not in discovered',
-      '      discover(neighbor); queue.enqueue(neighbor)',
-      'return visit order',
-    ],
-    question: 'Which structure makes BFS explore one layer at a time?',
-    answers: ['A stack', 'A queue', 'A max heap'],
-    correct: 1,
-    reason: 'The queue processes earlier discoveries before later ones, preserving distance layers.',
-  },
-  dfs: {
-    name: 'Depth-first search',
-    time: 'O(V + E)',
-    space: 'O(V)',
-    intro:
-      'Follow one path as far as possible, then backtrack. A stack remembers nodes still waiting to be explored.',
-    insight:
-      'DFS is useful for connectivity, cycles, and topological reasoning. Here, reverse-order pushes make smaller neighbors get visited first.',
-    code: [
-      'stack = [start]; visited = {}',
-      'while stack is not empty',
-      '  node = stack.pop()',
-      '  if node in visited: continue',
-      '  visit(node); visited.add(node)',
-      '  push unvisited neighbors in reverse order',
-      'return visit order',
-    ],
-    question: 'Which behavior describes DFS?',
-    answers: [
-      'Explore every immediate neighbor first',
-      'Always select the shortest edge',
-      'Explore deeply, then backtrack',
-    ],
-    correct: 2,
-    reason: 'DFS follows a branch until it runs out of unvisited neighbors, then returns to another branch.',
-  },
-  heap: {
-    name: 'Build a max heap',
-    time: 'O(n)',
-    space: 'O(1)',
-    intro:
-      'Start at the last parent and sift each value down. A max heap keeps every parent at least as large as its children.',
-    insight:
-      'A max heap is not fully sorted. Its largest value is at the root. Bottom-up heap construction takes O(n) time.',
-    code: [
-      'for parent = floor(n / 2) − 1 down to 0',
-      '  current = parent',
-      '  choose largest of current and children',
-      '  if current is largest: stop',
-      '  swap(current, largest)',
-      '  current = largest; repeat',
-      'return max heap',
-    ],
-    question: 'What does a max heap guarantee?',
-    answers: [
-      'Every parent is at least as large as its children',
-      'Every level is sorted left to right',
-      'The smallest value is at the root',
-    ],
-    correct: 0,
-    reason: 'The heap property applies between parents and children. Siblings need not be ordered.',
-  },
-  hash: {
-    name: 'Hashing: linear probing',
-    time: 'O(1) avg. / insert',
-    space: 'O(m)',
-    intro:
-      'Map each value to value mod 11. If its chest is occupied, try the next chest until you find an empty slot.',
-    insight:
-      'Linear probing resolves collisions. Each insertion is O(m) in the worst case; expected constant time needs a suitable hash and low load.',
-    code: [
-      'for value in input',
-      '  slot = value mod 11',
-      '  while table[slot] is occupied',
-      '    slot = (slot + 1) mod 11',
-      '  table[slot] = value',
-      'return table',
-    ],
-    question: 'Two values map to the same occupied slot. What does linear probing do?',
-    answers: ['Deletes the previous value', 'Tries the next slot, wrapping around', 'Drops the new value'],
-    correct: 1,
-    reason: 'Probe consecutive slots until you find an empty one, wrapping from the final slot to zero.',
-  },
-};
-export function makeTree(values, heap = false) {
-  if (heap)
-    return values.map((value, i) => ({
-      id: i,
-      value,
-      left: i * 2 + 1 < values.length ? i * 2 + 1 : null,
-      right: i * 2 + 2 < values.length ? i * 2 + 2 : null,
-    }));
-  const nodes = [];
-  for (const value of values) {
-    if (nodes.some(n => n.value === value)) continue;
-    const node = { id: nodes.length, value, left: null, right: null };
-    if (!nodes.length) {
-      nodes.push(node);
-      continue;
-    }
-    let p = nodes[0];
-    while (true) {
-      const side = value < p.value ? 'left' : 'right';
-      if (p[side] === null) {
-        p[side] = node.id;
-        nodes.push(node);
-        break;
-      }
-      p = nodes[p[side]];
-    }
-  }
-  return nodes;
-}
-export const graphEdges = [
-  [0, 1],
-  [0, 2],
-  [1, 3],
-  [1, 4],
-  [2, 4],
-  [2, 5],
-  [3, 6],
-  [4, 6],
-  [5, 6],
-];
-export function simulate(algorithm, input, target = 6) {
-  let a = [...input],
-    frames = [],
-    comparisons = 0,
-    moves = 0,
-    marked = [],
-    discarded = [],
-    aux = [],
-    output = [],
-    nodes = [];
-  const emit = (message, line = 0, active = [], extra = {}) =>
-    frames.push({
-      values: [...a],
-      active: [...active],
-      marked: [...marked],
-      discarded: [...discarded],
-      aux: [...aux],
-      output: [...output],
-      comparisons,
-      moves,
-      message,
-      line,
-      nodes: nodes.map(n => ({ ...n })),
-      ...extra,
-    });
-  if (algorithm === 'binary') a.sort((a, b) => a - b);
-  if (['bst', 'inorder'].includes(algorithm)) nodes = makeTree(a);
-  if (algorithm === 'heap') nodes = makeTree(a, true);
-  if (['stack', 'queue'].includes(algorithm)) a = [];
-  if (algorithm === 'hash') a = Array(11).fill(null);
-  emit('World ready. Press play or step through at your own pace.');
-  if (algorithm === 'bubble') {
-    for (let end = a.length - 1; end > 0; end--) {
-      for (let i = 0; i < end; i++) {
-        comparisons++;
-        emit(`Compare ${a[i]} and ${a[i + 1]}.`, 2, [i, i + 1]);
-        if (a[i] > a[i + 1]) {
-          [a[i], a[i + 1]] = [a[i + 1], a[i]];
-          moves++;
-          emit('Swap the neighbors. The larger value moves right.', 4, [i, i + 1], { swapping: true });
-        } else emit('Already in order. Continue to the next pair.', 3, [i, i + 1]);
-      }
-      marked.push(end);
-      emit(`${a[end]} is in its final position.`, 0);
-    }
-    marked = a.map((_, i) => i);
-    emit('Sorted! Every block is in ascending order.', 5);
-  } else if (algorithm === 'selection') {
-    for (let i = 0; i < a.length - 1; i++) {
-      let min = i;
-      emit(`Find the smallest value from index ${i} onward.`, 1, [i]);
-      for (let j = i + 1; j < a.length; j++) {
-        comparisons++;
-        emit(`Compare ${a[j]} with current minimum ${a[min]}.`, 2, [min, j]);
-        if (a[j] < a[min]) {
-          min = j;
-          emit(`${a[min]} is the new minimum.`, 3, [min]);
-        }
-      }
-      if (min !== i) {
-        [a[i], a[min]] = [a[min], a[i]];
-        moves++;
-        emit('Place the minimum at the front of the unsorted section.', 4, [i, min], { swapping: true });
-      }
-      marked.push(i);
-    }
-    marked = a.map((_, i) => i);
-    emit('Sorted! Every block is in ascending order.', 5);
-  } else if (algorithm === 'insertion') {
-    marked = [0];
-    for (let i = 1; i < a.length; i++) {
-      let j = i;
-      emit(`Insert ${a[i]} into the sorted section.`, 1, [i]);
-      while (j > 0) {
-        comparisons++;
-        emit(`Compare ${a[j - 1]} and ${a[j]}.`, 3, [j - 1, j]);
-        if (a[j - 1] <= a[j]) {
-          emit('Correct position found.', 4, [j]);
-          break;
-        }
-        [a[j], a[j - 1]] = [a[j - 1], a[j]];
-        moves++;
-        emit('Move this block one position left.', 5, [j - 1, j], { swapping: true });
-        j--;
-      }
-      marked = Array.from({ length: i + 1 }, (_, k) => k);
-      emit('The sorted section has grown by one block.', 0);
-    }
-    emit('Sorted! Every block is in ascending order.', 5);
-  } else if (algorithm === 'merge') {
-    function sort(lo, hi, depth = 0) {
-      if (lo >= hi) return;
-      const mid = Math.floor((lo + hi) / 2);
-      emit(`Split indices ${lo}–${hi} at ${mid}. Recursion depth ${depth}.`, 2, [lo, hi], {
-        range: [lo, hi],
-        depth,
-      });
-      sort(lo, mid, depth + 1);
-      sort(mid + 1, hi, depth + 1);
-      const left = a.slice(lo, mid + 1),
-        right = a.slice(mid + 1, hi + 1);
-      let i = 0,
-        j = 0,
-        k = lo;
-      aux = [...left, ...right];
-      emit(`Merge sorted runs [${left.join(', ')}] and [${right.join(', ')}].`, 4, [lo, mid + 1], {
-        range: [lo, hi],
-        depth,
-      });
-      while (i < left.length || j < right.length) {
-        if (i < left.length && j < right.length) {
-          comparisons++;
-          emit(`Compare ${left[i]} (left) and ${right[j]} (right). Take the left on a tie.`, 5, [], {
-            range: [lo, hi],
-            depth,
-          });
-        }
-        const fromLeft = j === right.length || (i < left.length && left[i] <= right[j]);
-        a[k] = fromLeft ? left[i++] : right[j++];
-        moves++;
-        aux = [...left.slice(i), ...right.slice(j)];
-        emit(`Write ${a[k]} at index ${k} from the ${fromLeft ? 'left' : 'right'} buffer.`, 6, [k], {
-          range: [lo, hi],
-          depth,
-        });
-        k++;
-      }
-      emit(
-        `Indices ${lo}–${hi} are now a sorted run.`,
-        4,
-        Array.from({ length: hi - lo + 1 }, (_, i) => lo + i),
-        { range: [lo, hi], depth }
-      );
-    }
-    sort(0, a.length - 1);
-    aux = [];
-    marked = a.map((_, i) => i);
-    emit('Sorted! The final merge joins every block into one sorted run.', 7);
-  } else if (algorithm === 'quick') {
-    function sort(lo, hi, depth = 0) {
-      if (lo > hi) return;
-      if (lo === hi) {
-        marked.push(lo);
-        emit(`Single block at index ${lo}: already fixed.`, 1, [lo], { range: [lo, hi], depth });
-        return;
-      }
-      const pivot = a[hi];
-      let boundary = lo;
-      emit(`Pivot ${pivot} at index ${hi}. Partition indices ${lo}–${hi}.`, 2, [hi], {
-        pivot: hi,
-        range: [lo, hi],
-        depth,
-      });
-      for (let j = lo; j < hi; j++) {
-        comparisons++;
-        emit(`Compare ${a[j]} with pivot ${pivot}. Boundary: index ${boundary}.`, 3, [j, hi], {
-          pivot: hi,
-          range: [lo, hi],
-          depth,
-        });
-        if (a[j] <= pivot) {
-          if (j !== boundary) {
-            [a[j], a[boundary]] = [a[boundary], a[j]];
-            moves++;
-          }
-          emit(`Extend the ≤ ${pivot} region through index ${boundary}.`, 4, [j, boundary], {
-            swapping: j !== boundary,
-            pivot: hi,
-            range: [lo, hi],
-            depth,
-          });
-          boundary++;
-        }
-      }
-      if (boundary !== hi) {
-        [a[boundary], a[hi]] = [a[hi], a[boundary]];
-        moves++;
-      }
-      marked.push(boundary);
-      emit(`Pivot ${pivot} is fixed at index ${boundary}. Sort each side.`, 5, [boundary, hi], {
-        swapping: boundary !== hi,
-        pivot: boundary,
-        range: [lo, hi],
-        depth,
-      });
-      sort(lo, boundary - 1, depth + 1);
-      sort(boundary + 1, hi, depth + 1);
-    }
-    sort(0, a.length - 1);
-    marked = a.map((_, i) => i);
-    emit('Sorted! Every pivot and single-block partition is in its final position.', 8);
-  } else if (algorithm === 'binary') {
-    let l = 0,
-      r = a.length - 1,
-      found = false;
-    while (l <= r) {
-      const mid = Math.floor((l + r) / 2);
-      comparisons++;
-      emit(`Middle index ${mid} contains ${a[mid]}. Target: ${target}.`, 2, [mid], { bounds: [l, r] });
-      if (a[mid] === target) {
-        marked = [mid];
-        emit(`Found ${target} at index ${mid}.`, 3, [mid]);
-        found = true;
-        break;
-      }
-      if (a[mid] < target) {
-        discarded.push(...Array.from({ length: mid - l + 1 }, (_, k) => l + k));
-        l = mid + 1;
-        emit(`Target is larger. Search the right half.`, 4, [], { bounds: [l, r] });
-      } else {
-        discarded.push(...Array.from({ length: r - mid + 1 }, (_, k) => mid + 1 + k));
-        r = mid - 1;
-        emit('Target is smaller. Search the left half.', 5, [], { bounds: [l, r] });
-      }
-    }
-    if (!found) emit(`${target} is not in this dataset.`, 6);
-  } else if (algorithm === 'linear') {
-    let found = false;
-    for (let i = 0; i < a.length; i++) {
-      comparisons++;
-      emit(`Inspect index ${i}: ${a[i]}. Looking for ${target}.`, 1, [i]);
-      if (a[i] === target) {
-        marked = [i];
-        emit(`Found ${target} at index ${i}.`, 2, [i]);
-        found = true;
-        break;
-      }
-      discarded.push(i);
-    }
-    if (!found) emit(`${target} is not in this dataset.`, 3);
-  } else if (algorithm === 'traverse') {
-    for (let i = 0; i < a.length; i++) {
-      comparisons++;
-      emit(`Visit node ${a[i]}. ${i === 0 ? 'This is the head.' : ''}`, 2, [i]);
-      marked.push(i);
-      output.push(a[i]);
-      emit(
-        i === a.length - 1
-          ? 'The next pointer is null. End of the list.'
-          : `Follow next to node ${a[i + 1]}.`,
-        3,
-        [i],
-        { activeEdge: [i, i + 1] }
-      );
-    }
-    emit('Traversal complete. Every node was visited in order.', 4);
-  } else if (['stack', 'queue'].includes(algorithm)) {
-    const source = [...input];
-    a = [];
-    emit('Storage is empty. Add each input block.', 0);
-    for (const value of source) {
-      a.push(value);
-      moves++;
-      emit(`${algorithm === 'stack' ? 'Push' : 'Enqueue'} ${value}.`, 1, [a.length - 1]);
-    }
-    while (a.length) {
-      const value = algorithm === 'stack' ? a.pop() : a.shift();
-      output.push(value);
-      moves++;
-      emit(`${algorithm === 'stack' ? 'Pop' : 'Dequeue'} ${value}. Output: ${output.join(' → ')}.`, 3, []);
-    }
-    emit(
-      algorithm === 'stack'
-        ? 'Stack empty. The output reverses the arrival order.'
-        : 'Queue empty. The output preserves the arrival order.',
-      5
-    );
-  } else if (algorithm === 'bst') {
-    let id = nodes.length ? 0 : null,
-      found = false;
-    while (id !== null) {
-      const n = nodes[id];
-      comparisons++;
-      emit(`Compare target ${target} with node ${n.value}.`, 2, [id]);
-      if (n.value === target) {
-        marked.push(id);
-        emit(`Found ${target} in the tree.`, 3, [id]);
-        found = true;
-        break;
-      }
-      marked.push(id);
-      const next = target < n.value ? n.left : n.right;
-      emit(
-        `${target} is ${target < n.value ? 'smaller' : 'larger'}. Follow the ${target < n.value ? 'left' : 'right'} branch.`,
-        target < n.value ? 4 : 5,
-        [id],
-        { activeEdge: [id, next] }
-      );
-      id = next;
-    }
-    if (!found) emit(`Reached an empty branch. ${target} is not in the tree.`, 6);
-  } else if (algorithm === 'inorder') {
-    function visit(id) {
-      if (id === null) return;
-      const n = nodes[id];
-      emit(`Explore the left subtree of ${n.value}.`, 2, [id]);
-      visit(n.left);
-      marked.push(id);
-      output.push(n.value);
-      comparisons++;
-      emit(`Visit ${n.value}. Output: ${output.join(', ')}.`, 3, [id]);
-      emit(`Explore the right subtree of ${n.value}.`, 4, [id]);
-      visit(n.right);
-    }
-    if (nodes.length) visit(0);
-    emit('Traversal complete. The values are in ascending order.', 5);
-  } else if (['bfs', 'dfs'].includes(algorithm)) {
-    a = [1, 2, 3, 4, 5, 6, 7];
-    const neighbors = Array.from({ length: 7 }, () => []);
-    for (const [u, v] of graphEdges) {
-      neighbors[u].push(v);
-      neighbors[v].push(u);
-    }
-    neighbors.forEach(n => n.sort((a, b) => a - b));
-    let pending = [0],
-      seen = new Set(algorithm === 'bfs' ? [0] : []);
-    aux = [1];
-    emit('Start at node 1.', 0, [0]);
-    while (pending.length) {
-      const id = algorithm === 'bfs' ? pending.shift() : pending.pop();
-      if (algorithm === 'dfs' && seen.has(id)) continue;
-      seen.add(id);
-      marked.push(id);
-      output.push(id + 1);
-      comparisons++;
-      aux = pending.map(i => i + 1);
-      emit(`Visit node ${id + 1}.`, algorithm === 'bfs' ? 2 : 4, [id]);
-      const next = algorithm === 'bfs' ? neighbors[id] : [...neighbors[id]].reverse();
-      for (const n of next) {
-        if (seen.has(n)) continue;
-        if (algorithm === 'bfs') seen.add(n);
-        pending.push(n);
-        moves++;
-        aux = pending.map(i => i + 1);
-        emit(`Add node ${n + 1} to the ${algorithm === 'bfs' ? 'queue' : 'stack'}.`, 5, [id, n], {
-          activeEdge: [id, n],
-        });
-      }
-    }
-    aux = [];
-    emit(`Exploration complete: ${output.join(' → ')}.`, 6);
-  } else if (algorithm === 'heap') {
-    for (let parent = Math.floor(a.length / 2) - 1; parent >= 0; parent--) {
-      let current = parent;
-      emit(`Sift down from parent ${a[parent]}.`, 0, [parent]);
-      while (true) {
-        let largest = current;
-        for (const child of [current * 2 + 1, current * 2 + 2])
-          if (child < a.length) {
-            comparisons++;
-            emit(`Compare child ${a[child]} with ${a[largest]}.`, 2, [largest, child]);
-            if (a[child] > a[largest]) largest = child;
-          }
-        if (largest === current) {
-          emit('This parent satisfies the max-heap property.', 3, [current]);
-          break;
-        }
-        [a[current], a[largest]] = [a[largest], a[current]];
-        nodes = makeTree(a, true);
-        moves++;
-        emit('Swap with the larger child.', 4, [current, largest], { swapping: true });
-        current = largest;
-      }
-    }
-    marked = a.map((_, i) => i);
-    emit('Max heap built. Every parent is at least as large as its children.', 6);
-  } else if (algorithm === 'hash') {
-    const source = [...input];
-    a = Array(11).fill(null);
-    emit('Eleven empty chests. Hash rule: value mod 11.', 0);
-    for (const value of source) {
-      let slot = value % 11;
-      emit(`${value} mod 11 = ${slot}. Try chest ${slot}.`, 1, [slot], { incoming: value });
-      while (a[slot] !== null) {
-        comparisons++;
-        emit(`Collision: chest ${slot} contains ${a[slot]}.`, 2, [slot], { incoming: value, swapping: true });
-        slot = (slot + 1) % 11;
-        emit(`Probe the next chest: ${slot}.`, 3, [slot], { incoming: value });
-      }
-      a[slot] = value;
-      marked.push(slot);
-      moves++;
-      emit(`Store ${value} in chest ${slot}.`, 4, [slot]);
-    }
-    emit('All values stored. Collisions resolved with linear probing.', 5);
-  }
-  frames[frames.length - 1].complete = true;
-  return frames;
-}
+export { makeTree, graphEdges, weightedEdges, directedEdges } from './lessons/shared.mjs';
+export { lessons, definitions, simulate } from './lessons/index.mjs';
+import { definitions as registry } from './lessons/index.mjs';
+
+// Hide lessons that are planned but not yet implemented.
+for (const topic of topics) topic.algorithms = topic.algorithms.filter(id => registry[id]);

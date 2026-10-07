@@ -320,6 +320,7 @@ function chip(value, state = '') {
 }
 function setAlgorithm(id) {
   algorithm = id;
+  quizIndex = 0;
   const def = definitions[id];
   $('algorithm').value = id;
   $('lessonTitle').textContent = def.name;
@@ -396,32 +397,40 @@ function switchTab(name) {
     .querySelectorAll('[data-tab]')
     .forEach(b => b.setAttribute('aria-selected', b.dataset.tab === name));
 }
+let quizIndex = 0;
 function renderPractice() {
   const def = definitions[algorithm];
-  $('question').textContent = def.question;
+  const quiz = def.quiz;
+  quizIndex = Math.min(quizIndex, quiz.length - 1);
+  const q = quiz[quizIndex];
+  $('question').textContent = q.question;
+  $('quizProgress').textContent = `QUESTION ${quizIndex + 1} OF ${quiz.length}`;
   $('answerFeedback').textContent = progress.quizzes.includes(algorithm)
     ? '✓ Quest completed. You can practice again anytime.'
     : '';
+  $('nextQuestion').hidden = true;
   $('answers').replaceChildren(
-    ...def.answers.map((text, i) => {
+    ...q.answers.map((text, i) => {
       const button = document.createElement('button');
       button.className = 'answer';
       button.innerHTML = `<span>${String.fromCharCode(65 + i)}</span>`;
       button.append(document.createTextNode(text));
       button.onclick = () => {
-        const correct = i === def.correct;
+        const correct = i === q.correct;
         button.classList.toggle('correct', correct);
         button.classList.toggle('incorrect', !correct);
         $('answerFeedback').textContent = correct
-          ? `Correct! ${def.reason}`
+          ? `Correct! ${q.reason}`
           : 'Not quite. Revisit the lesson, or try another answer.';
         if (correct) {
           [...$('answers').children].forEach(b => (b.disabled = true));
-          if (!progress.quizzes.includes(algorithm)) {
+          if (quizIndex < quiz.length - 1) {
+            $('nextQuestion').hidden = false;
+          } else if (!progress.quizzes.includes(algorithm)) {
             progress.quizzes.push(algorithm);
             persist();
             toast('✦ Quest complete! +25 XP.');
-          }
+          } else $('nextQuestion').hidden = false;
         }
       };
       return button;
@@ -552,6 +561,10 @@ document.querySelectorAll('[data-preset]').forEach(
 );
 document.querySelectorAll('[data-tab]').forEach(b => (b.onclick = () => switchTab(b.dataset.tab)));
 $('returnLesson').onclick = () => switchTab('learn');
+$('nextQuestion').onclick = () => {
+  quizIndex = (quizIndex + 1) % definitions[algorithm].quiz.length;
+  renderPractice();
+};
 $('practiceNav').onclick = () => {
   if ($('lab').hidden) {
     location.hash = 'world/sorting';
