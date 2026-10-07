@@ -1,93 +1,676 @@
-import {pointInPolygon,nextToFace} from './build-state.mjs';
-import {makeTree,graphEdges} from './algorithms.mjs';
-const colors={grass:['#75b343','#88613f','#67472e'],dirt:['#a3835e','#8c6649','#644d36'],leaf:['#65a336','#49852b','#31611f'],trunk:['#b69465','#886440','#66472d'],stone:['#93988c','#767e72','#555f55'],sand:['#e3d09c','#c2ac78','#9f8b61'],red:['#ecb392','#c28363','#94583f'],gold:['#f1d891','#c7a953','#a08235'],diamond:['#99e6d4','#65baaa','#3e9689'],water:['#8ecacf','#5ba4b8','#477e9b'],ice:['#c2e2dc','#96beb9','#789eab'],purple:['#c2afd4','#a08bb6','#76698e'],chest:['#c5a16a','#a07a4c','#735532'],dark:['#626e60','#4c5846','#364232'],wood:['#c3ae7b','#9b8256','#766143']};
-const themes={grass:{sky:['#69b4ea','#c5e2ea'],ground:'grass'},sand:{sky:['#c8cfb8','#e7d4a9'],ground:'sand'},red:{sky:['#b9c2b6','#d3c8af'],ground:'grass'},wood:{sky:['#c0cbb2','#d4ddba'],ground:'grass'},forest:{sky:['#91b8ad','#c1d3ad'],ground:'grass'},water:{sky:['#98c5d1','#d1e4d4'],ground:'grass'},ice:{sky:['#a9cbd9','#dce8da'],ground:'ice'},purple:{sky:['#b8b6ce','#d6cccf'],ground:'stone'}};
-const noise=(x,y,z,n)=>Math.abs(Math.sin(x*127.1+y*311.7+z*74.7+n*43.1)*43758.5453)%1;
-export class VoxelWorld{
- constructor(canvas,{interactive=false,onInspect,onBuildAction,onBuildHover}={}){
- this.canvas=canvas;this.ctx=canvas.getContext('2d');this.angle=0;this.zoom=1;this.night=false;this.options={};this.hits=[];this.buildFaces=[];this.buildHover=null;this.onInspect=onInspect;this.onBuildAction=onBuildAction;this.onBuildHover=onBuildHover;
- this.resize=new ResizeObserver(()=>this.draw());this.resize.observe(canvas);
- if(interactive){let drag=false,lastX=0,lastY=0,moved=0;
- const hover=e=>{const r=canvas.getBoundingClientRect();const hit=this.pickBuild(e.clientX-r.left,e.clientY-r.top);this.buildHover=hit;this.onBuildHover?.(hit);this.draw();};
- canvas.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag=true;lastX=e.clientX;lastY=e.clientY;moved=0;canvas.focus({preventScroll:true});canvas.setPointerCapture(e.pointerId);});
- canvas.addEventListener('pointermove',e=>{if(!drag){if(this.options.build)hover(e);return;}const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;moved+=Math.hypot(dx,dy);if(moved>5){this.buildHover=null;this.angle=Math.max(-.26,Math.min(.26,this.angle+dx*.002));this.draw();}});
- canvas.addEventListener('pointerup',e=>{if(!drag)return;drag=false;if(moved>=5)return;const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
- if(this.options.build){const hit=this.pickBuild(x,y);this.buildHover=null;this.onBuildAction?.(hit);return;}
- const hit=this.hits.findLast(p=>Math.abs(p.x-x)<p.r&&Math.abs(p.y-y)<p.r);if(hit)this.onInspect?.(hit);
- });
- canvas.addEventListener('pointerleave',()=>{if(this.buildHover){this.buildHover=null;this.draw();}});
- canvas.addEventListener('pointercancel',()=>{drag=false;this.buildHover=null;this.draw();});
- canvas.addEventListener('wheel',e=>{e.preventDefault();this.zoom=Math.max(.7,Math.min(1.35,this.zoom-e.deltaY*.001));this.buildHover=null;this.draw();},{passive:false});
- }
- }
- pickBuild(x,y){return this.buildFaces.findLast(face=>pointInPolygon(x,y,face.points))||null;}
+import { pointInPolygon, nextToFace } from './build-state.mjs';
+import { makeTree, graphEdges } from './algorithms.mjs';
+const colors = {
+  grass: ['#75b343', '#88613f', '#67472e'],
+  dirt: ['#a3835e', '#8c6649', '#644d36'],
+  leaf: ['#65a336', '#49852b', '#31611f'],
+  trunk: ['#b69465', '#886440', '#66472d'],
+  stone: ['#93988c', '#767e72', '#555f55'],
+  sand: ['#e3d09c', '#c2ac78', '#9f8b61'],
+  red: ['#ecb392', '#c28363', '#94583f'],
+  gold: ['#f1d891', '#c7a953', '#a08235'],
+  diamond: ['#99e6d4', '#65baaa', '#3e9689'],
+  water: ['#8ecacf', '#5ba4b8', '#477e9b'],
+  ice: ['#c2e2dc', '#96beb9', '#789eab'],
+  purple: ['#c2afd4', '#a08bb6', '#76698e'],
+  chest: ['#c5a16a', '#a07a4c', '#735532'],
+  dark: ['#626e60', '#4c5846', '#364232'],
+  wood: ['#c3ae7b', '#9b8256', '#766143'],
+};
+const themes = {
+  grass: { sky: ['#69b4ea', '#c5e2ea'], ground: 'grass' },
+  sand: { sky: ['#c8cfb8', '#e7d4a9'], ground: 'sand' },
+  red: { sky: ['#b9c2b6', '#d3c8af'], ground: 'grass' },
+  wood: { sky: ['#c0cbb2', '#d4ddba'], ground: 'grass' },
+  forest: { sky: ['#91b8ad', '#c1d3ad'], ground: 'grass' },
+  water: { sky: ['#98c5d1', '#d1e4d4'], ground: 'grass' },
+  ice: { sky: ['#a9cbd9', '#dce8da'], ground: 'ice' },
+  purple: { sky: ['#b8b6ce', '#d6cccf'], ground: 'stone' },
+};
+const noise = (x, y, z, n) =>
+  Math.abs(Math.sin(x * 127.1 + y * 311.7 + z * 74.7 + n * 43.1) * 43758.5453) % 1;
+export class VoxelWorld {
+  constructor(canvas, { interactive = false, onInspect, onBuildAction, onBuildHover } = {}) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.angle = 0;
+    this.zoom = 1;
+    this.night = false;
+    this.options = {};
+    this.hits = [];
+    this.buildFaces = [];
+    this.buildHover = null;
+    this.onInspect = onInspect;
+    this.onBuildAction = onBuildAction;
+    this.onBuildHover = onBuildHover;
+    this.resize = new ResizeObserver(() => this.draw());
+    this.resize.observe(canvas);
+    if (interactive) {
+      let drag = false,
+        lastX = 0,
+        lastY = 0,
+        moved = 0;
+      const hover = e => {
+        const r = canvas.getBoundingClientRect();
+        const hit = this.pickBuild(e.clientX - r.left, e.clientY - r.top);
+        this.buildHover = hit;
+        this.onBuildHover?.(hit);
+        this.draw();
+      };
+      canvas.addEventListener('pointerdown', e => {
+        if (e.button !== 0) return;
+        drag = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        moved = 0;
+        canvas.focus({ preventScroll: true });
+        canvas.setPointerCapture(e.pointerId);
+      });
+      canvas.addEventListener('pointermove', e => {
+        if (!drag) {
+          if (this.options.build) hover(e);
+          return;
+        }
+        const dx = e.clientX - lastX,
+          dy = e.clientY - lastY;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        moved += Math.hypot(dx, dy);
+        if (moved > 5) {
+          this.buildHover = null;
+          this.angle = Math.max(-0.26, Math.min(0.26, this.angle + dx * 0.002));
+          this.draw();
+        }
+      });
+      canvas.addEventListener('pointerup', e => {
+        if (!drag) return;
+        drag = false;
+        if (moved >= 5) return;
+        const r = canvas.getBoundingClientRect(),
+          x = e.clientX - r.left,
+          y = e.clientY - r.top;
+        if (this.options.build) {
+          const hit = this.pickBuild(x, y);
+          this.buildHover = null;
+          this.onBuildAction?.(hit);
+          return;
+        }
+        const hit = this.hits.findLast(p => Math.abs(p.x - x) < p.r && Math.abs(p.y - y) < p.r);
+        if (hit) this.onInspect?.(hit);
+      });
+      canvas.addEventListener('pointerleave', () => {
+        if (this.buildHover) {
+          this.buildHover = null;
+          this.draw();
+        }
+      });
+      canvas.addEventListener('pointercancel', () => {
+        drag = false;
+        this.buildHover = null;
+        this.draw();
+      });
+      canvas.addEventListener(
+        'wheel',
+        e => {
+          e.preventDefault();
+          this.zoom = Math.max(0.7, Math.min(1.35, this.zoom - e.deltaY * 0.001));
+          this.buildHover = null;
+          this.draw();
+        },
+        { passive: false }
+      );
+    }
+  }
+  pickBuild(x, y) {
+    return this.buildFaces.findLast(face => pointInPolygon(x, y, face.points)) || null;
+  }
 
- set(options){const old=this.options.frame,newFrame=options.frame;cancelAnimationFrame(this.animation);this.transition=null;if(options.topic==='sorting'&&old&&newFrame&&newFrame.swapping&&newFrame.active.length===2&&old.values.length===newFrame.values.length&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const [i,j]=newFrame.active;if(old.values[i]===newFrame.values[j]&&old.values[j]===newFrame.values[i]&&old.values[i]!==newFrame.values[i])this.transition={i,j,start:performance.now(),duration:300};}this.options={...this.options,...options};this.draw();}reset(){this.angle=0;this.zoom=1;this.draw();}destroy(){this.resize.disconnect();}
- draw(){const {canvas,ctx}=this,w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;const dpr=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,w,h);this.hits=[];this.buildFaces=[];const {topic='sorting',terrain='grass',frame,thumbnail=false,hero=false,algorithm='bubble'}=this.options;const theme=themes[terrain]||themes.grass;const night=this.night;const gradient=ctx.createLinearGradient(0,0,0,h);gradient.addColorStop(0,night?'#172a3c':theme.sky[0]);gradient.addColorStop(1,night?'#435960':theme.sky[1]);ctx.fillStyle=gradient;ctx.fillRect(0,0,w,h);
- if(night){ctx.fillStyle='#d6e1c6';for(let i=0;i<32;i++)ctx.fillRect(noise(i,1,2,2)*w,noise(i,1,2,3)*h*.52,2,2);}ctx.fillStyle=night?'#eee9bd':'#f5e8b6';let sun=thumbnail?18:34;ctx.fillRect(w*.82,h*.12,sun,sun);ctx.fillStyle=night?'#657778':'#eceddb';[[.07,.19,.17],[.44,.11,.18],[.68,.28,.12]].forEach(([x,y,l])=>{ctx.fillRect(w*x,h*y,w*l,thumbnail?6:12);ctx.fillRect(w*x+w*l*.25,h*y-(thumbnail?4:7),w*l*.5,thumbnail?4:7);});
- for(let layer=0;layer<2;layer++){ctx.fillStyle=night?['#334d49','#3e5b4c'][layer]:['#8eaf9c','#839f80'][layer];for(let i=0;i<14;i++){const top=h*(.43+layer*.08)-noise(i,layer,1,2)*h*.11;ctx.fillRect(i*w/13,top,w/13+1,h-top);}}
- const scale=Math.min(w/(thumbnail?17:24),h/(thumbnail?12:16))*this.zoom;const ox=w*(hero&&w>650?.72:.5),oy=h*(this.options.build?.60:hero?w>650?.60:.81:thumbnail?.50:.57);const project=(x,y,z)=>{const xx=x*Math.cos(this.angle)-y*Math.sin(this.angle),yy=x*Math.sin(this.angle)+y*Math.cos(this.angle);return[ox+(xx-yy)*scale,oy+(xx+yy)*scale*.46-z*scale*.85];};
- const uv=(u,v)=>[(u+v)/2,(v-u)/2];const poly=(pts,c)=>{ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();ctx.fillStyle=c;ctx.fill();};
- const quadPoint=(p,s,t)=>[p[0][0]*(1-s)*(1-t)+p[1][0]*s*(1-t)+p[2][0]*s*t+p[3][0]*(1-s)*t,p[0][1]*(1-s)*(1-t)+p[1][1]*s*(1-t)+p[2][1]*s*t+p[3][1]*(1-s)*t];
- function texture(pts,x,y,z,side){for(let i=0;i<14;i++){const sx=Math.floor(noise(x,y,z,i+side*7)*8)/8,sy=Math.floor(noise(x,y,z,i+side*13+4)*8)/8;poly([quadPoint(pts,sx,sy),quadPoint(pts,sx+.125,sy),quadPoint(pts,sx+.125,sy+.125),quadPoint(pts,sx,sy+.125)],i%2?'#18211035':'#ffffff28');}}
- const cube=o=>{const {x,y,z,t}=o,p=colors[t]||colors.grass,A=project(x,y,z+1),B=project(x+1,y,z+1),C=project(x+1,y+1,z+1),D=project(x,y+1,z+1),E=project(x,y+1,z),F=project(x+1,y+1,z),G=project(x+1,y,z);const top=[A,B,C,D],left=[D,C,F,E],right=[B,C,F,G];poly(left,p[1]);poly(right,p[2]);poly(top,p[0]);if(!thumbnail||o.detail){texture(top,x,y,z,1);texture(left,x,y,z,2);texture(right,x,y,z,3);}if(t==='grass'){
- for(const [face,shade] of [[left,'#629835'],[right,'#467b2b']]){
-  poly([face[0],face[1],quadPoint(face,1,.22),quadPoint(face,0,.22)],shade);
-  for(let i=0;i<8;i++){const u=i/8,v=.22+noise(x,y,z,i)*.22;poly([quadPoint(face,u,.2),quadPoint(face,u+.125,.2),quadPoint(face,u+.125,v),quadPoint(face,u,v)],shade);}
- }
- }
- if(t==='stone'&&z<=-3&&noise(x,y,z,7)>.72){for(const face of [left,right])for(let i=0;i<4;i++){const u=.15+(i%2)*.4,v=.18+Math.floor(i/2)*.4;poly([quadPoint(face,u,v),quadPoint(face,u+.16,v),quadPoint(face,u+.16,v+.15),quadPoint(face,u,v+.15)],noise(x,y,z,1)>.5?'#55cfc7':'#d8b257');}}
- if(t==='trunk'){for(const face of [left,right])for(let i=1;i<4;i++){const u=i/4;poly([quadPoint(face,u,0),quadPoint(face,u+.08,0),quadPoint(face,u+.08,1),quadPoint(face,u,1)],'#3d2b2670');}}
- if(t==='wood'){for(let i=1;i<4;i++){const v=i/4;poly([quadPoint(top,0,v),quadPoint(top,1,v),quadPoint(top,1,v+.045),quadPoint(top,0,v+.045)],'#594021');}}
-if(this.options.build){for(const [face,points] of [['left',left],['right',right],['top',top]])this.buildFaces.push({block:o,face,points});}
-if(t==='chest'){poly([quadPoint(left,.05,.35),quadPoint(left,.95,.35),quadPoint(left,.95,.46),quadPoint(left,.05,.46)],'#695132');poly([quadPoint(left,.42,.3),quadPoint(left,.58,.3),quadPoint(left,.58,.63),quadPoint(left,.42,.63)],'#eed28a');}};
- if(this.options.build){
- const b=this.options.build,base=[];
- for(let x=-4;x<=4;x++)for(let y=-4;y<=4;y++){base.push({x,y,z:-2,t:'stone'},{x,y,z:-1,t:theme.ground});}
- const depth=o=>(o.x+o.y)*Math.cos(this.angle)+(o.x-o.y)*Math.sin(this.angle);
- [...base,...b.blocks].sort((a,b)=>depth(a)-depth(b)||a.z-b.z).forEach(cube);
- const hit=this.buildHover;
- const target=hit?(b.tool==='mine'?hit.block:nextToFace(hit)):b.cursor;
- if(target){
- const valid=b.tool==='mine'?target.z>=0&&b.blocks.some(p=>p.x===target.x&&p.y===target.y&&p.z===target.z):!b.checkPlace({...target,t:b.material});
- const stroke=valid?'#e9ffc0':'#ff9b76';
- if(b.tool==='mine'&&hit){ctx.beginPath();hit.points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();ctx.strokeStyle=stroke;ctx.lineWidth=3;ctx.stroke();}
- else {const {x,y,z}=target;const corners=[[x,y,z],[x+1,y,z],[x+1,y+1,z],[x,y+1,z],[x,y,z+1],[x+1,y,z+1],[x+1,y+1,z+1],[x,y+1,z+1]].map(p=>project(...p));
- poly([corners[4],corners[5],corners[6],corners[7]],valid?'#dcffae44':'#ff573c44');ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.setLineDash([4,3]);for(const [a,c] of [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]]){ctx.beginPath();ctx.moveTo(...corners[a]);ctx.lineTo(...corners[c]);ctx.stroke();}ctx.setLineDash([]);
- }
- }
- return;
- }
+  set(options) {
+    const old = this.options.frame,
+      newFrame = options.frame;
+    cancelAnimationFrame(this.animation);
+    this.transition = null;
+    if (
+      options.topic === 'sorting' &&
+      old &&
+      newFrame &&
+      newFrame.swapping &&
+      newFrame.active.length === 2 &&
+      old.values.length === newFrame.values.length &&
+      !matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      const [i, j] = newFrame.active;
+      if (
+        old.values[i] === newFrame.values[j] &&
+        old.values[j] === newFrame.values[i] &&
+        old.values[i] !== newFrame.values[i]
+      )
+        this.transition = { i, j, start: performance.now(), duration: 300 };
+    }
+    this.options = { ...this.options, ...options };
+    this.draw();
+  }
+  reset() {
+    this.angle = 0;
+    this.zoom = 1;
+    this.draw();
+  }
+  destroy() {
+    this.resize.disconnect();
+  }
+  draw() {
+    const { canvas, ctx } = this,
+      w = canvas.clientWidth,
+      h = canvas.clientHeight;
+    if (!w || !h) return;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, w, h);
+    this.hits = [];
+    this.buildFaces = [];
+    const {
+      topic = 'sorting',
+      terrain = 'grass',
+      frame,
+      thumbnail = false,
+      hero = false,
+      algorithm = 'bubble',
+    } = this.options;
+    const theme = themes[terrain] || themes.grass;
+    const night = this.night;
+    const gradient = ctx.createLinearGradient(0, 0, 0, h);
+    gradient.addColorStop(0, night ? '#172a3c' : theme.sky[0]);
+    gradient.addColorStop(1, night ? '#435960' : theme.sky[1]);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, h);
+    if (night) {
+      ctx.fillStyle = '#d6e1c6';
+      for (let i = 0; i < 32; i++) ctx.fillRect(noise(i, 1, 2, 2) * w, noise(i, 1, 2, 3) * h * 0.52, 2, 2);
+    }
+    ctx.fillStyle = night ? '#eee9bd' : '#f5e8b6';
+    let sun = thumbnail ? 18 : 34;
+    ctx.fillRect(w * 0.82, h * 0.12, sun, sun);
+    ctx.fillStyle = night ? '#657778' : '#eceddb';
+    [
+      [0.07, 0.19, 0.17],
+      [0.44, 0.11, 0.18],
+      [0.68, 0.28, 0.12],
+    ].forEach(([x, y, l]) => {
+      ctx.fillRect(w * x, h * y, w * l, thumbnail ? 6 : 12);
+      ctx.fillRect(w * x + w * l * 0.25, h * y - (thumbnail ? 4 : 7), w * l * 0.5, thumbnail ? 4 : 7);
+    });
+    for (let layer = 0; layer < 2; layer++) {
+      ctx.fillStyle = night ? ['#334d49', '#3e5b4c'][layer] : ['#8eaf9c', '#839f80'][layer];
+      for (let i = 0; i < 14; i++) {
+        const top = h * (0.43 + layer * 0.08) - noise(i, layer, 1, 2) * h * 0.11;
+        ctx.fillRect((i * w) / 13, top, w / 13 + 1, h - top);
+      }
+    }
+    const scale = Math.min(w / (thumbnail ? 17 : 24), h / (thumbnail ? 12 : 16)) * this.zoom;
+    const ox = w * (hero && w > 650 ? 0.72 : 0.5),
+      oy = h * (this.options.build ? 0.6 : hero ? (w > 650 ? 0.6 : 0.81) : thumbnail ? 0.5 : 0.57);
+    const project = (x, y, z) => {
+      const xx = x * Math.cos(this.angle) - y * Math.sin(this.angle),
+        yy = x * Math.sin(this.angle) + y * Math.cos(this.angle);
+      return [ox + (xx - yy) * scale, oy + (xx + yy) * scale * 0.46 - z * scale * 0.85];
+    };
+    const uv = (u, v) => [(u + v) / 2, (v - u) / 2];
+    const poly = (pts, c) => {
+      ctx.beginPath();
+      pts.forEach((p, i) => (i ? ctx.lineTo(...p) : ctx.moveTo(...p)));
+      ctx.closePath();
+      ctx.fillStyle = c;
+      ctx.fill();
+    };
+    const quadPoint = (p, s, t) => [
+      p[0][0] * (1 - s) * (1 - t) + p[1][0] * s * (1 - t) + p[2][0] * s * t + p[3][0] * (1 - s) * t,
+      p[0][1] * (1 - s) * (1 - t) + p[1][1] * s * (1 - t) + p[2][1] * s * t + p[3][1] * (1 - s) * t,
+    ];
+    function texture(pts, x, y, z, side) {
+      for (let i = 0; i < 14; i++) {
+        const sx = Math.floor(noise(x, y, z, i + side * 7) * 8) / 8,
+          sy = Math.floor(noise(x, y, z, i + side * 13 + 4) * 8) / 8;
+        poly(
+          [
+            quadPoint(pts, sx, sy),
+            quadPoint(pts, sx + 0.125, sy),
+            quadPoint(pts, sx + 0.125, sy + 0.125),
+            quadPoint(pts, sx, sy + 0.125),
+          ],
+          i % 2 ? '#18211035' : '#ffffff28'
+        );
+      }
+    }
+    const cube = o => {
+      const { x, y, z, t } = o,
+        p = colors[t] || colors.grass,
+        A = project(x, y, z + 1),
+        B = project(x + 1, y, z + 1),
+        C = project(x + 1, y + 1, z + 1),
+        D = project(x, y + 1, z + 1),
+        E = project(x, y + 1, z),
+        F = project(x + 1, y + 1, z),
+        G = project(x + 1, y, z);
+      const top = [A, B, C, D],
+        left = [D, C, F, E],
+        right = [B, C, F, G];
+      poly(left, p[1]);
+      poly(right, p[2]);
+      poly(top, p[0]);
+      if (!thumbnail || o.detail) {
+        texture(top, x, y, z, 1);
+        texture(left, x, y, z, 2);
+        texture(right, x, y, z, 3);
+      }
+      if (t === 'grass') {
+        for (const [face, shade] of [
+          [left, '#629835'],
+          [right, '#467b2b'],
+        ]) {
+          poly([face[0], face[1], quadPoint(face, 1, 0.22), quadPoint(face, 0, 0.22)], shade);
+          for (let i = 0; i < 8; i++) {
+            const u = i / 8,
+              v = 0.22 + noise(x, y, z, i) * 0.22;
+            poly(
+              [
+                quadPoint(face, u, 0.2),
+                quadPoint(face, u + 0.125, 0.2),
+                quadPoint(face, u + 0.125, v),
+                quadPoint(face, u, v),
+              ],
+              shade
+            );
+          }
+        }
+      }
+      if (t === 'stone' && z <= -3 && noise(x, y, z, 7) > 0.72) {
+        for (const face of [left, right])
+          for (let i = 0; i < 4; i++) {
+            const u = 0.15 + (i % 2) * 0.4,
+              v = 0.18 + Math.floor(i / 2) * 0.4;
+            poly(
+              [
+                quadPoint(face, u, v),
+                quadPoint(face, u + 0.16, v),
+                quadPoint(face, u + 0.16, v + 0.15),
+                quadPoint(face, u, v + 0.15),
+              ],
+              noise(x, y, z, 1) > 0.5 ? '#55cfc7' : '#d8b257'
+            );
+          }
+      }
+      if (t === 'trunk') {
+        for (const face of [left, right])
+          for (let i = 1; i < 4; i++) {
+            const u = i / 4;
+            poly(
+              [
+                quadPoint(face, u, 0),
+                quadPoint(face, u + 0.08, 0),
+                quadPoint(face, u + 0.08, 1),
+                quadPoint(face, u, 1),
+              ],
+              '#3d2b2670'
+            );
+          }
+      }
+      if (t === 'wood') {
+        for (let i = 1; i < 4; i++) {
+          const v = i / 4;
+          poly(
+            [
+              quadPoint(top, 0, v),
+              quadPoint(top, 1, v),
+              quadPoint(top, 1, v + 0.045),
+              quadPoint(top, 0, v + 0.045),
+            ],
+            '#594021'
+          );
+        }
+      }
+      if (this.options.build) {
+        for (const [face, points] of [
+          ['left', left],
+          ['right', right],
+          ['top', top],
+        ])
+          this.buildFaces.push({ block: o, face, points });
+      }
+      if (t === 'chest') {
+        poly(
+          [
+            quadPoint(left, 0.05, 0.35),
+            quadPoint(left, 0.95, 0.35),
+            quadPoint(left, 0.95, 0.46),
+            quadPoint(left, 0.05, 0.46),
+          ],
+          '#695132'
+        );
+        poly(
+          [
+            quadPoint(left, 0.42, 0.3),
+            quadPoint(left, 0.58, 0.3),
+            quadPoint(left, 0.58, 0.63),
+            quadPoint(left, 0.42, 0.63),
+          ],
+          '#eed28a'
+        );
+      }
+    };
+    if (this.options.build) {
+      const b = this.options.build,
+        base = [];
+      for (let x = -4; x <= 4; x++)
+        for (let y = -4; y <= 4; y++) {
+          base.push({ x, y, z: -2, t: 'stone' }, { x, y, z: -1, t: theme.ground });
+        }
+      const depth = o => (o.x + o.y) * Math.cos(this.angle) + (o.x - o.y) * Math.sin(this.angle);
+      [...base, ...b.blocks].sort((a, b) => depth(a) - depth(b) || a.z - b.z).forEach(cube);
+      const hit = this.buildHover;
+      const target = hit ? (b.tool === 'mine' ? hit.block : nextToFace(hit)) : b.cursor;
+      if (target) {
+        const valid =
+          b.tool === 'mine'
+            ? target.z >= 0 && b.blocks.some(p => p.x === target.x && p.y === target.y && p.z === target.z)
+            : !b.checkPlace({ ...target, t: b.material });
+        const stroke = valid ? '#e9ffc0' : '#ff9b76';
+        if (b.tool === 'mine' && hit) {
+          ctx.beginPath();
+          hit.points.forEach((p, i) => (i ? ctx.lineTo(...p) : ctx.moveTo(...p)));
+          ctx.closePath();
+          ctx.strokeStyle = stroke;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        } else {
+          const { x, y, z } = target;
+          const corners = [
+            [x, y, z],
+            [x + 1, y, z],
+            [x + 1, y + 1, z],
+            [x, y + 1, z],
+            [x, y, z + 1],
+            [x + 1, y, z + 1],
+            [x + 1, y + 1, z + 1],
+            [x, y + 1, z + 1],
+          ].map(p => project(...p));
+          poly([corners[4], corners[5], corners[6], corners[7]], valid ? '#dcffae44' : '#ff573c44');
+          ctx.strokeStyle = stroke;
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 3]);
+          for (const [a, c] of [
+            [0, 1],
+            [1, 2],
+            [2, 3],
+            [3, 0],
+            [4, 5],
+            [5, 6],
+            [6, 7],
+            [7, 4],
+            [0, 4],
+            [1, 5],
+            [2, 6],
+            [3, 7],
+          ]) {
+            ctx.beginPath();
+            ctx.moveTo(...corners[a]);
+            ctx.lineTo(...corners[c]);
+            ctx.stroke();
+          }
+          ctx.setLineDash([]);
+        }
+      }
+      return;
+    }
 
- const ground=[],objects=[],labels=[],lines=[];const addUV=(u,v,z,t,list=objects,detail=true)=>{const [x,y]=uv(u,v);list.push({x,y,z,t,detail});};
- const radius=thumbnail?5:7;for(let x=-radius;x<=radius;x++)for(let y=-radius;y<=radius;y++){const u=x-y,v=x+y;if(Math.abs(u)>(thumbnail?7.5:10.5)||v<-(thumbnail?6:8)||v>(thumbnail?5:6.5))continue;if(Math.abs(u)>(thumbnail?6:9)&&Math.abs(v)>3&&noise(x,y,0,3)>.5)continue;ground.push({x,y,z:-3,t:'stone'});if(noise(x,y,0,8)>.3)ground.push({x,y,z:-4,t:'stone'});ground.push({x,y,z:-2,t:terrain==='ice'?'stone':'dirt'});ground.push({x,y,z:-1,t:theme.ground});if(v>3&&terrain==='water'&&u>1)ground[ground.length-1].t='water';}
- const tree=(u,v,size=1)=>{const [x,y]=uv(u,v);for(let z=0;z<3;z++)objects.push({x,y,z,t:'trunk',detail:true});for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){objects.push({x:x+dx,y:y+dy,z:2,t:terrain==='ice'?'ice':'leaf',detail:true});if(Math.abs(dx)+Math.abs(dy)<3)objects.push({x:x+dx,y:y+dy,z:3,t:terrain==='ice'?'ice':'leaf',detail:true});}objects.push({x,y,z:4,t:terrain==='ice'?'ice':'leaf',detail:true});};
- if(!['tree','heap','graph'].includes(topic)){tree(-6,-5);if(!thumbnail)tree(7,-5);else tree(5,-4);}else{if(!thumbnail){tree(-9,-5);tree(8,-6);}}
- for(let u=-5;u<=5;u+=1.4)addUV(u,thumbnail?3.5:4.5,-.92,terrain==='sand'?'stone':'wood',ground,false);
- const torches=thumbnail?[]:[[-8,3],[8,3]];
- const f=frame||{values:[7,3,9,4,6,2],active:[],marked:[],discarded:[],nodes:[]};const a=f.values||[];const material=i=>(f.active||[]).includes(i)?f.swapping?'red':'gold':(f.discarded||[]).includes(i)?'dark':(f.marked||[]).includes(i)?'diamond':topic==='hash'?'chest':topic==='search'?'sand':'grass';const label=(u,v,z,text,id,sub)=>{const [x,y]=uv(u+.5,v);labels.push({x,y,z,text,id,sub});};
- if(topic==='sorting'){
- a.forEach((value,i)=>{let slot=i;if(this.transition){const t=Math.min(1,(performance.now()-this.transition.start)/this.transition.duration),ease=t*t*(3-2*t),{i:left,j:right}=this.transition;if(i===left)slot=right+(left-right)*ease;if(i===right)slot=left+(right-left)*ease;}const u=(slot-(a.length-1)/2)*(thumbnail?1.65:1.8),v=0,height=Math.max(1,Math.ceil(value*.4));for(let z=0;z<height;z++)addUV(u,v,z,z===height-1?material(i):material(i)==='grass'?'dirt':material(i));label(u,0,height+.35,value,i);if(!thumbnail)label(u,2.2,0,i,null,'index');});
- }else if(['search','list','hash'].includes(topic)){
- const space=topic==='hash'?1.5:1.8;a.forEach((value,i)=>{const u=(i-(a.length-1)/2)*space;addUV(u,0,0,material(i));label(u,0,1.55,value===null?'·':value,i);if(!thumbnail)label(u,2,0,i,null,'index');if(topic==='list'&&i<a.length-1)lines.push({from:[u+.7,0,.45],to:[u+space+.3,0,.45],active:f.activeEdge?.[0]===i});});
- }else if(topic==='stack'){
- if(algorithm==='queue'){a.forEach((value,i)=>{const u=(i-(a.length-1)/2)*1.8;addUV(u,0,0,material(i)==='grass'?'chest':material(i));label(u,0,1.65,value,i);});if(a.length&&!thumbnail){label(-(a.length-1)*.9,2,0,'FRONT',null,'index');label((a.length-1)*.9,2,0,'REAR',null,'index');}}
- else {a.forEach((value,i)=>{addUV(-.5,0,i,'chest');label(1.4,0,i+.5,value,i);});if(!a.length)label(0,0,1,'EMPTY',null,'index');else if(!thumbnail)label(-.5,0,a.length+.7,'TOP',null,'index');}
- }else if(['tree','heap'].includes(topic)){
- const ns=f.nodes?.length?f.nodes:makeTree(a,topic==='heap');const pos=new Map();let rank=0,maxDepth=0;function layout(id,depth){if(id===null||id===undefined)return;const n=ns[id];if(!n)return;layout(n.left,depth+1);pos.set(id,{u:rank++,depth});maxDepth=Math.max(maxDepth,depth);layout(n.right,depth+1);}if(ns.length)layout(0,0);for(const [id,p] of pos){p.u=(p.u-(ns.length-1)/2)*Math.min(2.4,14/Math.max(1,ns.length-1));p.v=(p.depth-maxDepth/2)*(maxDepth>4?1.8:2.8);}
- for(const n of ns){const p=pos.get(n.id);for(const child of [n.left,n.right])if(child!==null&&pos.has(child)){const q=pos.get(child);lines.push({from:[p.u+.5,p.v+.5,.35],to:[q.u+.5,q.v+.5,.35],active:f.activeEdge?.[0]===n.id&&f.activeEdge?.[1]===child});}addUV(p.u,p.v,0,material(n.id)==='grass'?'wood':material(n.id));label(p.u,p.v,1.4,n.value,n.id);}
- }else if(topic==='graph'){
- const points=[[-.5,-5],[-4,-1],[3,-1],[-6,3],[-1,3],[5.5,3],[-.5,6.5]];graphEdges.forEach(([i,j])=>{const p=points[i],q=points[j];lines.push({from:[p[0]+.5,p[1]+.5,.3],to:[q[0]+.5,q[1]+.5,.3],active:f.activeEdge&&[i,j].every(k=>f.activeEdge.includes(k))});});points.forEach(([u,v],i)=>{addUV(u,v,0,material(i)==='grass'?'stone':material(i));label(u,v,1.4,i+1,i);});
- }
- const depth=o=>(o.x+o.y)*Math.cos(this.angle)+(o.x-o.y)*Math.sin(this.angle);ground.sort((a,b)=>depth(a)-depth(b)||a.z-b.z).forEach(cube);
- for(const line of lines){const from=uv(line.from[0],line.from[1]),to=uv(line.to[0],line.to[1]);const p=project(...from,line.from[2]),q=project(...to,line.to[2]);ctx.beginPath();ctx.moveTo(...p);ctx.lineTo(...q);ctx.strokeStyle=line.active?'#f6d985':topic==='list'?'#ac6249':'#687c53';ctx.lineWidth=thumbnail?3:5;ctx.stroke();ctx.strokeStyle=line.active?'#ffecb4':'#bdc39a';ctx.lineWidth=1;ctx.stroke();}
- objects.sort((a,b)=>depth(a)-depth(b)||a.z-b.z).forEach(cube);
- for(const [u,v] of torches){const [x,y]=uv(u,v),[px,py]=project(x,y,1.1),unit=Math.max(2,Math.floor(scale/8));
- if(night){const glow=ctx.createRadialGradient(px,py,0,px,py,scale*2);glow.addColorStop(0,'#ffbd4577');glow.addColorStop(1,'#ffad2700');ctx.fillStyle=glow;ctx.fillRect(px-scale*2,py-scale*2,scale*4,scale*4);}
- ctx.fillStyle='#4c301c';ctx.fillRect(px-unit,py,unit*2,unit*7);ctx.fillStyle='#b4803f';ctx.fillRect(px-unit,py,unit,unit*6);ctx.fillStyle='#db6728';ctx.fillRect(px-unit*2,py-unit*2,unit*4,unit*3);ctx.fillStyle='#ffce54';ctx.fillRect(px-unit,py-unit*3,unit*2,unit*3);ctx.fillStyle='#fff5a5';ctx.fillRect(px-unit/2,py-unit*2,unit,unit*2);
- }
- for(const l of labels){const [x,y]=project(l.x,l.y,l.z),isIndex=l.sub==='index';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=isIndex?`${thumbnail?7:9}px monospace`:`bold ${thumbnail?10:Math.max(11,Math.min(15,scale*.5))}px monospace`;const width=Math.max(20,ctx.measureText(String(l.text)).width+12);if(!isIndex){ctx.fillStyle='#17291fdf';ctx.fillRect(Math.round(x-width/2),Math.round(y-10),width,20);ctx.fillStyle=(f.active||[]).includes(l.id)?'#ffe3a0':'#f1f7e2';}else ctx.fillStyle='#f0f5dbe0';ctx.fillText(l.text,x,y+.5);if(l.id!==null)this.hits.push({x,y,r:Math.max(14,width/2),value:l.text,index:l.id});}
- if(this.transition){if(performance.now()-this.transition.start<this.transition.duration)this.animation=requestAnimationFrame(()=>this.draw());else this.transition=null;}
- if(night){ctx.fillStyle='#12273920';ctx.fillRect(0,0,w,h);}
- }
+    const ground = [],
+      objects = [],
+      labels = [],
+      lines = [];
+    const addUV = (u, v, z, t, list = objects, detail = true) => {
+      const [x, y] = uv(u, v);
+      list.push({ x, y, z, t, detail });
+    };
+    const radius = thumbnail ? 5 : 7;
+    for (let x = -radius; x <= radius; x++)
+      for (let y = -radius; y <= radius; y++) {
+        const u = x - y,
+          v = x + y;
+        if (Math.abs(u) > (thumbnail ? 7.5 : 10.5) || v < -(thumbnail ? 6 : 8) || v > (thumbnail ? 5 : 6.5))
+          continue;
+        if (Math.abs(u) > (thumbnail ? 6 : 9) && Math.abs(v) > 3 && noise(x, y, 0, 3) > 0.5) continue;
+        ground.push({ x, y, z: -3, t: 'stone' });
+        if (noise(x, y, 0, 8) > 0.3) ground.push({ x, y, z: -4, t: 'stone' });
+        ground.push({ x, y, z: -2, t: terrain === 'ice' ? 'stone' : 'dirt' });
+        ground.push({ x, y, z: -1, t: theme.ground });
+        if (v > 3 && terrain === 'water' && u > 1) ground[ground.length - 1].t = 'water';
+      }
+    const tree = (u, v, size = 1) => {
+      const [x, y] = uv(u, v);
+      for (let z = 0; z < 3; z++) objects.push({ x, y, z, t: 'trunk', detail: true });
+      for (let dx = -1; dx <= 1; dx++)
+        for (let dy = -1; dy <= 1; dy++) {
+          objects.push({ x: x + dx, y: y + dy, z: 2, t: terrain === 'ice' ? 'ice' : 'leaf', detail: true });
+          if (Math.abs(dx) + Math.abs(dy) < 3)
+            objects.push({ x: x + dx, y: y + dy, z: 3, t: terrain === 'ice' ? 'ice' : 'leaf', detail: true });
+        }
+      objects.push({ x, y, z: 4, t: terrain === 'ice' ? 'ice' : 'leaf', detail: true });
+    };
+    if (!['tree', 'heap', 'graph'].includes(topic)) {
+      tree(-6, -5);
+      if (!thumbnail) tree(7, -5);
+      else tree(5, -4);
+    } else {
+      if (!thumbnail) {
+        tree(-9, -5);
+        tree(8, -6);
+      }
+    }
+    for (let u = -5; u <= 5; u += 1.4)
+      addUV(u, thumbnail ? 3.5 : 4.5, -0.92, terrain === 'sand' ? 'stone' : 'wood', ground, false);
+    const torches = thumbnail
+      ? []
+      : [
+          [-8, 3],
+          [8, 3],
+        ];
+    const f = frame || { values: [7, 3, 9, 4, 6, 2], active: [], marked: [], discarded: [], nodes: [] };
+    const a = f.values || [];
+    const material = i =>
+      (f.active || []).includes(i)
+        ? f.swapping
+          ? 'red'
+          : 'gold'
+        : (f.discarded || []).includes(i)
+          ? 'dark'
+          : (f.marked || []).includes(i)
+            ? 'diamond'
+            : topic === 'hash'
+              ? 'chest'
+              : topic === 'search'
+                ? 'sand'
+                : 'grass';
+    const label = (u, v, z, text, id, sub) => {
+      const [x, y] = uv(u + 0.5, v);
+      labels.push({ x, y, z, text, id, sub });
+    };
+    if (topic === 'sorting') {
+      a.forEach((value, i) => {
+        let slot = i;
+        if (this.transition) {
+          const t = Math.min(1, (performance.now() - this.transition.start) / this.transition.duration),
+            ease = t * t * (3 - 2 * t),
+            { i: left, j: right } = this.transition;
+          if (i === left) slot = right + (left - right) * ease;
+          if (i === right) slot = left + (right - left) * ease;
+        }
+        const u = (slot - (a.length - 1) / 2) * (thumbnail ? 1.65 : 1.8),
+          v = 0,
+          height = Math.max(1, Math.ceil(value * 0.4));
+        for (let z = 0; z < height; z++)
+          addUV(u, v, z, z === height - 1 ? material(i) : material(i) === 'grass' ? 'dirt' : material(i));
+        label(u, 0, height + 0.35, value, i);
+        if (!thumbnail) label(u, 2.2, 0, i, null, 'index');
+      });
+    } else if (['search', 'list', 'hash'].includes(topic)) {
+      const space = topic === 'hash' ? 1.5 : 1.8;
+      a.forEach((value, i) => {
+        const u = (i - (a.length - 1) / 2) * space;
+        addUV(u, 0, 0, material(i));
+        label(u, 0, 1.55, value === null ? '·' : value, i);
+        if (!thumbnail) label(u, 2, 0, i, null, 'index');
+        if (topic === 'list' && i < a.length - 1)
+          lines.push({
+            from: [u + 0.7, 0, 0.45],
+            to: [u + space + 0.3, 0, 0.45],
+            active: f.activeEdge?.[0] === i,
+          });
+      });
+    } else if (topic === 'stack') {
+      if (algorithm === 'queue') {
+        a.forEach((value, i) => {
+          const u = (i - (a.length - 1) / 2) * 1.8;
+          addUV(u, 0, 0, material(i) === 'grass' ? 'chest' : material(i));
+          label(u, 0, 1.65, value, i);
+        });
+        if (a.length && !thumbnail) {
+          label(-(a.length - 1) * 0.9, 2, 0, 'FRONT', null, 'index');
+          label((a.length - 1) * 0.9, 2, 0, 'REAR', null, 'index');
+        }
+      } else {
+        a.forEach((value, i) => {
+          addUV(-0.5, 0, i, 'chest');
+          label(1.4, 0, i + 0.5, value, i);
+        });
+        if (!a.length) label(0, 0, 1, 'EMPTY', null, 'index');
+        else if (!thumbnail) label(-0.5, 0, a.length + 0.7, 'TOP', null, 'index');
+      }
+    } else if (['tree', 'heap'].includes(topic)) {
+      const ns = f.nodes?.length ? f.nodes : makeTree(a, topic === 'heap');
+      const pos = new Map();
+      let rank = 0,
+        maxDepth = 0;
+      function layout(id, depth) {
+        if (id === null || id === undefined) return;
+        const n = ns[id];
+        if (!n) return;
+        layout(n.left, depth + 1);
+        pos.set(id, { u: rank++, depth });
+        maxDepth = Math.max(maxDepth, depth);
+        layout(n.right, depth + 1);
+      }
+      if (ns.length) layout(0, 0);
+      for (const [id, p] of pos) {
+        p.u = (p.u - (ns.length - 1) / 2) * Math.min(2.4, 14 / Math.max(1, ns.length - 1));
+        p.v = (p.depth - maxDepth / 2) * (maxDepth > 4 ? 1.8 : 2.8);
+      }
+      for (const n of ns) {
+        const p = pos.get(n.id);
+        for (const child of [n.left, n.right])
+          if (child !== null && pos.has(child)) {
+            const q = pos.get(child);
+            lines.push({
+              from: [p.u + 0.5, p.v + 0.5, 0.35],
+              to: [q.u + 0.5, q.v + 0.5, 0.35],
+              active: f.activeEdge?.[0] === n.id && f.activeEdge?.[1] === child,
+            });
+          }
+        addUV(p.u, p.v, 0, material(n.id) === 'grass' ? 'wood' : material(n.id));
+        label(p.u, p.v, 1.4, n.value, n.id);
+      }
+    } else if (topic === 'graph') {
+      const points = [
+        [-0.5, -5],
+        [-4, -1],
+        [3, -1],
+        [-6, 3],
+        [-1, 3],
+        [5.5, 3],
+        [-0.5, 6.5],
+      ];
+      graphEdges.forEach(([i, j]) => {
+        const p = points[i],
+          q = points[j];
+        lines.push({
+          from: [p[0] + 0.5, p[1] + 0.5, 0.3],
+          to: [q[0] + 0.5, q[1] + 0.5, 0.3],
+          active: f.activeEdge && [i, j].every(k => f.activeEdge.includes(k)),
+        });
+      });
+      points.forEach(([u, v], i) => {
+        addUV(u, v, 0, material(i) === 'grass' ? 'stone' : material(i));
+        label(u, v, 1.4, i + 1, i);
+      });
+    }
+    const depth = o => (o.x + o.y) * Math.cos(this.angle) + (o.x - o.y) * Math.sin(this.angle);
+    ground.sort((a, b) => depth(a) - depth(b) || a.z - b.z).forEach(cube);
+    for (const line of lines) {
+      const from = uv(line.from[0], line.from[1]),
+        to = uv(line.to[0], line.to[1]);
+      const p = project(...from, line.from[2]),
+        q = project(...to, line.to[2]);
+      ctx.beginPath();
+      ctx.moveTo(...p);
+      ctx.lineTo(...q);
+      ctx.strokeStyle = line.active ? '#f6d985' : topic === 'list' ? '#ac6249' : '#687c53';
+      ctx.lineWidth = thumbnail ? 3 : 5;
+      ctx.stroke();
+      ctx.strokeStyle = line.active ? '#ffecb4' : '#bdc39a';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    objects.sort((a, b) => depth(a) - depth(b) || a.z - b.z).forEach(cube);
+    for (const [u, v] of torches) {
+      const [x, y] = uv(u, v),
+        [px, py] = project(x, y, 1.1),
+        unit = Math.max(2, Math.floor(scale / 8));
+      if (night) {
+        const glow = ctx.createRadialGradient(px, py, 0, px, py, scale * 2);
+        glow.addColorStop(0, '#ffbd4577');
+        glow.addColorStop(1, '#ffad2700');
+        ctx.fillStyle = glow;
+        ctx.fillRect(px - scale * 2, py - scale * 2, scale * 4, scale * 4);
+      }
+      ctx.fillStyle = '#4c301c';
+      ctx.fillRect(px - unit, py, unit * 2, unit * 7);
+      ctx.fillStyle = '#b4803f';
+      ctx.fillRect(px - unit, py, unit, unit * 6);
+      ctx.fillStyle = '#db6728';
+      ctx.fillRect(px - unit * 2, py - unit * 2, unit * 4, unit * 3);
+      ctx.fillStyle = '#ffce54';
+      ctx.fillRect(px - unit, py - unit * 3, unit * 2, unit * 3);
+      ctx.fillStyle = '#fff5a5';
+      ctx.fillRect(px - unit / 2, py - unit * 2, unit, unit * 2);
+    }
+    for (const l of labels) {
+      const [x, y] = project(l.x, l.y, l.z),
+        isIndex = l.sub === 'index';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = isIndex
+        ? `${thumbnail ? 7 : 9}px monospace`
+        : `bold ${thumbnail ? 10 : Math.max(11, Math.min(15, scale * 0.5))}px monospace`;
+      const width = Math.max(20, ctx.measureText(String(l.text)).width + 12);
+      if (!isIndex) {
+        ctx.fillStyle = '#17291fdf';
+        ctx.fillRect(Math.round(x - width / 2), Math.round(y - 10), width, 20);
+        ctx.fillStyle = (f.active || []).includes(l.id) ? '#ffe3a0' : '#f1f7e2';
+      } else ctx.fillStyle = '#f0f5dbe0';
+      ctx.fillText(l.text, x, y + 0.5);
+      if (l.id !== null) this.hits.push({ x, y, r: Math.max(14, width / 2), value: l.text, index: l.id });
+    }
+    if (this.transition) {
+      if (performance.now() - this.transition.start < this.transition.duration)
+        this.animation = requestAnimationFrame(() => this.draw());
+      else this.transition = null;
+    }
+    if (night) {
+      ctx.fillStyle = '#12273920';
+      ctx.fillRect(0, 0, w, h);
+    }
+  }
 }
