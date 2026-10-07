@@ -95,6 +95,10 @@ Read `docs/lesson-contract.md`, create `dist/lessons/<id>.mjs`, add the id to th
 The generic lesson test checks frames, pseudocode line bounds, asks, quiz shape and your `check()` on a set of
 generated inputs. Add a game the same way with `docs/game-contract.md`.
 
+## How this was built
+
+<!-- TODO: Noor writes this section. -->
+
 ## Scope
 
 This is an independent educational project with original voxel graphics. It is not affiliated with Minecraft,
