@@ -268,6 +268,7 @@ export default {
     function recordRound(lesson, kind, score, perfect) {
       state.score += score;
       state.results.push({ lesson, kind, score, perfect });
+      state.round++;
       if (kind === 'order') recordForge(lesson.id, score);
     }
 
