@@ -12,5 +12,29 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: npm install --no-package-lock
       - run: npm run check
+      - run: npm run lint
       - run: npm test
+      - name: Accessibility check (axe-core, serious and critical only)
+        run: |
+          node scripts/serve.mjs &
+          sleep 2
+          npx axe "http://localhost:4173/" "http://localhost:4173/#world/sorting/bubble" \
+            --load-delay 2500 --timeout 90 \
+            --chromedriver-path "$CHROMEWEBDRIVER/chromedriver" \
+            --save axe-results.json --dir .
+          node -e '
+            const results = require("./axe-results.json");
+            let failures = 0;
+            for (const page of results) {
+              for (const v of page.violations) {
+                const serious = ["serious", "critical"].includes(v.impact);
+                const line = `${serious ? "FAIL" : "note"} [${v.impact}] ${v.id}: ${v.help} (${v.nodes.length} nodes) on ${page.url}`;
+                console.log(line);
+                if (serious) failures++;
+              }
+            }
+            if (failures) { console.error(`${failures} serious or critical accessibility violation(s).`); process.exit(1); }
+            console.log("No serious or critical accessibility violations.");
+          '
