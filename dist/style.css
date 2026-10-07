@@ -2149,7 +2149,9 @@ body {
   top: 3px;
   left: 4px;
   font: 8px var(--pixel);
-  color: #e9eedb;
+  color: #f3f7e8;
+  background: #353a31;
+  padding: 1px 3px;
 }
 .slot-label {
   display: none;
@@ -2300,13 +2302,13 @@ body {
   padding-bottom: 20px;
 }
 .course-intro .eyebrow {
-  color: #59632b;
+  color: #3f4a1a;
 }
 .course-intro p {
   color: #5b4c34;
 }
 .course-intro small {
-  color: #766143;
+  color: #4f3f22;
 }
 .course-emblem {
   background: #80633b;
@@ -2322,7 +2324,7 @@ body {
 }
 .chapter-number {
   background: #c6af7c;
-  color: #64522f;
+  color: #3b2d14;
 }
 .chapter-title strong {
   color: #3c3926;
@@ -2331,10 +2333,10 @@ body {
   line-height: 1.6;
 }
 .chapter-title small {
-  color: #746344;
+  color: #4f3f22;
 }
 .chapter-status {
-  color: #766348;
+  color: #4f3f22;
 }
 .chapter-status.available {
   color: #375225;
@@ -2505,7 +2507,7 @@ body {
 }
 .guide-intro .eyebrow,
 .step-explanation .eyebrow {
-  color: #75653f;
+  color: #4f3f22;
 }
 .guide-intro h2 {
   font-family: var(--pixel);
@@ -2517,7 +2519,7 @@ body {
   color: #5b4d34;
 }
 .complexities span {
-  color: #77613f;
+  color: #4f3f22;
 }
 .complexities b {
   color: #383b22;
@@ -2534,14 +2536,14 @@ body {
 }
 .code-heading,
 .code-heading span:last-child {
-  color: #6d5b3c;
+  color: #4f3f22;
 }
 .inspector pre {
   background: #cdbb8b;
-  color: #655232;
+  color: #3f3119;
 }
 .code-line b {
-  color: #948057;
+  color: #5a4727;
 }
 .code-line.highlight {
   background: #a9b36e;
@@ -2549,7 +2551,7 @@ body {
   border-color: #54692c;
 }
 .code-line.highlight b {
-  color: #4b642d;
+  color: #2f3b18;
 }
 .stats {
   border-color: #b79a65;
@@ -2558,10 +2560,10 @@ body {
   color: #4b5428;
 }
 .stats span {
-  color: #6e5d3f;
+  color: #4f3f22;
 }
 .insight p {
-  color: #705a36;
+  color: #4f3f22;
 }
 .insight > span {
   color: #997a25;
