@@ -542,11 +542,30 @@ function answer(given) {
   $('step').disabled = false;
   setTimeout(
     () => {
-      if (state.mode === 'mine' && !state.mine?.pending && state.position < state.frames.length - 1)
-        moveTo(state.position + 1);
+      if (state.mode === 'mine' && !state.mine?.pending) runToAsk();
     },
     correct ? 700 : 1600
   );
+}
+
+// Mine Mode: advance through frames without a question, pausing briefly on each, until the next ask.
+function runToAsk() {
+  clearTimeout(state.timer);
+  state.timer = null;
+  const advance = () => {
+    if (state.mode !== 'mine' || state.position >= state.frames.length - 1) {
+      state.timer = null;
+      return;
+    }
+    moveTo(state.position + 1);
+    const f = state.frames[state.position];
+    if (f.ask && !state.mine.answered.has(state.position)) {
+      state.timer = null;
+      return;
+    }
+    state.timer = setTimeout(advance, 550);
+  };
+  state.timer = setTimeout(advance, 350);
 }
 
 function nodeLabel(id) {

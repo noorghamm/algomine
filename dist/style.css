@@ -2113,7 +2113,7 @@ body {
 }
 .world-hotbar {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(11, minmax(0, 1fr));
   gap: 5px;
   padding: 7px;
   background: #a3a397;
@@ -3956,7 +3956,6 @@ dialog#settingsDialog {
 :root[data-theme='light'] .mine-hint {
   color: #4f5f47;
 }
-:root[data-theme='light'] .hero,
 :root[data-theme='light'] .topic-card,
 :root[data-theme='light'] .learning-strip,
 :root[data-theme='light'] .inspector,
@@ -3987,7 +3986,7 @@ dialog#settingsDialog {
   border-color: #c7d1b8;
 }
 :root[data-theme='light'] .step-explanation p,
-:root[data-theme='light'] .hero p,
+:root[data-theme='light'] .question p,
 :root[data-theme='light'] .question p,
 :root[data-theme='light'] .ask-prompt {
   color: #2b3a26;
@@ -4090,4 +4089,119 @@ dialog#settingsDialog {
 :root[data-theme='light'] .timer-bar,
 :root[data-theme='light'] .experience-track {
   background: #dfe7cf;
+}
+:root[data-theme='light'] body {
+  background-color: #d9dfc6;
+  background-image:
+    linear-gradient(#b9c6a040 1px, transparent 1px), linear-gradient(90deg, #b9c6a040 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-attachment: fixed;
+}
+:root[data-theme='light'] .header {
+  border-bottom-color: #a9b894;
+  box-shadow: 0 4px #8fae5a;
+}
+:root[data-theme='light'] .lab-top,
+:root[data-theme='light'] .back-link,
+:root[data-theme='light'] .breadcrumb,
+:root[data-theme='light'] .lab-completed,
+:root[data-theme='light'] .eyebrow.muted,
+:root[data-theme='light'] #resultCount,
+:root[data-theme='light'] .inventory-caption,
+:root[data-theme='light'] #experienceText,
+:root[data-theme='light'] .catalogue h2,
+:root[data-theme='light'] .course-heading h2,
+:root[data-theme='light'] .lab-heading h1,
+:root[data-theme='light'] .builder-heading h1,
+:root[data-theme='light'] .builder-heading p,
+:root[data-theme='light'] .arcade-heading h1,
+:root[data-theme='light'] .arcade-stage-top h1 {
+  color: #1c2619;
+  text-shadow: none;
+}
+:root[data-theme='light'] .brand {
+  color: #1c2619;
+  text-shadow:
+    2px 2px #ffffffa0,
+    3px 3px #a9b894;
+}
+:root[data-theme='light'] .nav-link {
+  color: #4f5f47;
+}
+:root[data-theme='light'] .nav-link.active {
+  color: var(--lime);
+}
+:root[data-theme='light'] .xp-label {
+  color: #3f7d1f;
+  text-shadow: none;
+}
+:root[data-theme='light'] .streak-badge {
+  color: #a0651a;
+}
+:root[data-theme='light'] .hero h1,
+:root[data-theme='light'] .hero-tagline,
+:root[data-theme='light'] .title-splash,
+:root[data-theme='light'] .scene-caption,
+:root[data-theme='light'] .world-coords,
+:root[data-theme='light'] .world-title,
+:root[data-theme='light'] .floating-sign {
+  text-shadow: none;
+}
+
+:root[data-theme='light'] .hero h1,
+:root[data-theme='light'] .hero-tagline,
+:root[data-theme='light'] .hero-copy .eyebrow {
+  color: #f3f7e8;
+}
+:root[data-theme='light'] .hero h1 em {
+  color: #b8ed80;
+}
+:root[data-theme='light'] .hero p {
+  color: #c9d8bf;
+}
+:root[data-theme='light'] .hero-bottom {
+  color: #c9d8bf;
+}
+.world-hotbar {
+  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+}
+
+/* Arcade: Complexity Rush (game-rush). */
+.game-rush .timer-bar {
+  height: 14px;
+}
+.game-rush .rush-detail {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c7d8b8;
+  margin: 0 0 14px;
+}
+
+/* Arcade: Stack Attack (game-stack-attack). */
+.game-stack-attack .struct-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #93a47f;
+}
+.game-stack-attack .queue-row {
+  min-height: 46px;
+}
+.game-stack-attack .big-chip.wrong {
+  border-color: #d28d78;
+  background: #51372b;
+}
+.game-stack-attack .op-log {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #93a47f;
+  min-height: 16px;
+}
+.game-stack-attack .bracket-string {
+  font: 26px/1.4 monospace;
+  letter-spacing: 6px;
+  text-align: center;
+  color: #ffe3a3;
+  margin: 8px auto;
 }

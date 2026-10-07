@@ -17,6 +17,7 @@ import {
 import { lab, initLab } from './lab.mjs';
 import { initArcade, openArcade, closeArcade } from './arcade/index.mjs';
 import { initSettings, openSettings, applyTheme } from './settings.mjs';
+import { shareCard } from './share.mjs';
 
 const cards = [];
 let filter = 'All worlds';
@@ -337,6 +338,10 @@ $('practiceNav').onclick = () => {
 };
 $('journalNav').onclick = showJournal;
 $('closeJournal').onclick = () => $('journalDialog').close();
+$('shareCard').onclick = async () => {
+  const result = await shareCard();
+  toast(result === 'shared' ? 'Card shared.' : 'Progress card saved as a PNG.', 'good');
+};
 $('settingsNav').onclick = openSettings;
 $('sound').onclick = () => {
   const on = sound.set(!sound.enabled);
